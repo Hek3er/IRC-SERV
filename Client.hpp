@@ -18,6 +18,8 @@ public:
 	void	SetAddress( std::string address );
 	void	SetFd( int fd );
 
+	bool	CheckNickname( std::string nickname ) const;
+
 private:
 	int			_fd;
 	std::string _nickname;
