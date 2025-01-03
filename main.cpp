@@ -3,11 +3,8 @@
 int main() {
 
 	
-	Client	c(1, "", "", "");
+	Server s;
 
-	std::string nick = "@hello";
-
-	std::cout << c.CheckNickname(nick) << std::endl;
-
+	s.RunServer();
 
 }
