@@ -14,9 +14,11 @@ class Server {
 public:
 	Server();
 	void RunServer( void );
+	bool	SendMessage( int client_fd, std::string message ) const;
 	// Getters
 	int			GetPort( void ) const;
 	std::string GetPassword( void ) const;
+	~Server();
 
 private:
 	int					_port; // the server port

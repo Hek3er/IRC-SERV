@@ -49,16 +49,19 @@ void Server::RunServer( void ) {
 		return ;
 	}
 
+	std::cout << "Server Waiting for connections..." << std::endl;
+
 	int client_fd;
 	// i should change the params in accept (rn this is just a test)
 	if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
 		std::cout << "Coudn't accept" <<std::endl;
-		return ; // should be removed because the server shoudn't quit
+		// return ; // should be removed because the server shoudn't quit
 	}
 
 	std::string msg = "Welcome to the server";
-	send(client_fd, msg.c_str(), msg.length(), 0); // should also check if it fails or not
-
+	if (!SendMessage(client_fd, msg)) {
+		std::cerr << "Coudn't send the message" << std::endl;
+	}
 	/*
 	 * The idea rn is to get the information of the client the nickname then assign it to a client in the map
 	 * since the map has a key of nickname we need to retrive the nickname and the information first;
@@ -66,5 +69,16 @@ void Server::RunServer( void ) {
 	 * This is used so we can have instante lookup times when we need to make direct messages
 	*/
 
-	std::cout << "sockfd => " << this->_sockfd << std::endl;
+	std::cout << "sockfd => " << this->_sockfd << " Clientfd => " << client_fd << std::endl;
+}
+
+bool	Server::SendMessage( int client_fd, std::string message ) const {
+	if (send(client_fd, message.c_str(), message.length(), 0) == -1) {
+		return false;
+	}
+	return true;
+}
+
+Server::~Server() {
+	(this->_sockfd == -1) ? : close(this->_sockfd);
 }
