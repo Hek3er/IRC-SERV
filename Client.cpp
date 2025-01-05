@@ -1,10 +1,18 @@
 #include "Client.hpp"
+#include <sched.h>
+
+Client::Client( int fd, std::string address ) {
+    this->_fd = fd;
+    this->_address = address;
+    this->_registered = false;
+}
 
 Client::Client( int fd, std::string nickname, std::string username, std::string address ) {
 	this->_fd = fd;
 	this->_nickname = nickname;
 	this->_username = username;
 	this->_address = address;
+	this->_registered = false;
 }
 
 std::string	Client::GetNickname( void ) const {
@@ -37,6 +45,14 @@ void	Client::SetAddress( std::string address ) {
 
 void	Client::SetFd( int fd ) {
 	this->_fd = fd;
+}
+
+void    Client::SwitchToRegistered( void ) {
+    this->_registered = true;
+}
+
+bool    Client::IsRegistered( void ) const {
+    return (this->_registered);
 }
 
 /* TODO:

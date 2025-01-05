@@ -4,6 +4,7 @@
 
 class Client {
 public:
+    Client( int fd, std::string address );
 	Client( int fd, std::string nickname, std::string username, std::string address );
 
 	// Getters
@@ -11,6 +12,9 @@ public:
 	std::string GetUsername( void ) const;
 	std::string GetAddress( void ) const;
 	int			GetFd( void ) const;
+	
+	void   SwitchToRegistered( void );
+	bool   IsRegistered( void ) const;
 
 	//Setters
 	void	SetNickname( std::string nickname );
@@ -21,6 +25,7 @@ public:
 	bool	CheckNickname( std::string nickname ) const;
 
 private:
+    bool        _registered;
 	int			_fd;
 	std::string _nickname;
 	std::string _username;

@@ -14,7 +14,7 @@
 class Server {
 public:
 	Server();
-	void RunServer( void );
+    void    RunServer( void );
 	bool	SendMessage( int client_fd, std::string message ) const;
 	// Getters
 	int			GetPort( void ) const;
@@ -26,5 +26,5 @@ private:
 	int					_sockfd; 
 	std::string			_password; // password to the server
 	// std::vector<Client> _clients;
-	std::map<std::string, Client> _clients; // map that takes a string [nickname] as a key and the value is the obj of the client with that nickname
+	std::map<int, Client> _clients; // map that takes an int [fd] as a key and the value is the obj of the client with that fd
 };
