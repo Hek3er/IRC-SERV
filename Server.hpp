@@ -10,6 +10,7 @@
 #include <sstream>
 #include <cstring> // memset
 #include "Client.hpp"
+#include <poll.h>
 
 class Server {
 public:
@@ -27,4 +28,5 @@ private:
 	std::string			_password; // password to the server
 	// std::vector<Client> _clients;
 	std::map<int, Client> _clients; // map that takes an int [fd] as a key and the value is the obj of the client with that fd
+	std::vector<struct pollfd> _fds;
 };

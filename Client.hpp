@@ -4,6 +4,8 @@
 
 class Client {
 public:
+    Client( );
+    Client( int fd );
     Client( int fd, std::string address );
 	Client( int fd, std::string nickname, std::string username, std::string address );
 

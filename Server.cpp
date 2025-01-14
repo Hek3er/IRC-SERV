@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include <netdb.h>
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -55,28 +56,63 @@ void Server::RunServer( void ) {
         char ad[1024] = {0};
         gethostname(ad, sizeof(ad));
         std::cout << "Server Waiting for connections..." << ad << " " << this->_port << std::endl;
-       	int client_fd;
-       	// i should change the params in accept (rn this is just a test)
-       	if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
-      		std::cout << "Coudn't accept" <<std::endl;
-      		// return ; // should be removed because the server shoudn't quit
-       	}
-        std::cout << "Client is : "  <<  client_fd << std::endl;
-        std::string msg = "Welcome to the server\n";
-        if (!SendMessage(client_fd, msg)) {
-        	std::cerr << "Coudn't send the message" << std::endl;
-        }
+                
+        struct pollfd fd;
+        memset(&fd, 0, sizeof(fd));
+        
+        fd.fd = this->_sockfd;
+        fd.events = POLLIN;
+        this->_fds.push_back(fd);
+        
+        // Client  new_client( client_fd );
+        // this->_clients[client_fd] = new_client;
+        
+        // std::cout << "Client is : "  <<  new_client.GetFd() << std::endl;
+        // std::string msg = "Welcome to the server\n";
+        // if (!SendMessage(client_fd, msg)) {
+        // 	std::cerr << "Coudn't send the message" << std::endl;
+        // }
+        
         while(1) {
-            char buff[1024] = {0};
-            int res =  recv(client_fd, buff, sizeof(buff), 0);
-            if (res == 0) {
-                std::cout << "Client disconnected" << std::endl;
-                close(client_fd);
-                break;
-            } else if (res <0) {
-                std::cerr << "Coudn't receive message" << std::endl;
-            } else {
-                std::cout << buff;
+            int client_fd; 
+            
+           	// i should change the params in accept (rn this is just a test)
+            
+            int ret = poll(this->_fds.data(), this->_fds.size(), 1000);
+            if (ret == -1) {
+                std::cerr << "error in poll" << std::endl;
+            }
+            
+            for (int i = 0; i < this->_fds.size(); i++) {
+                if (this->_fds[i].revents & POLLIN) {
+                    if (this->_fds[i].fd == this->_sockfd) {
+                        //new client
+                        if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
+                      		std::cout << "Coudn't accept" <<std::endl;
+                      		// return ; // should be removed because the server shoudn't quit
+                       	}
+                        struct pollfd fd;
+                        memset(&fd, 0, sizeof(fd));
+                        
+                        fd.fd = client_fd;
+                        fd.events = POLLIN;
+                        this->_fds.push_back(fd);
+                    } else {
+                        char buff[1024] = {0};
+                        int res =  recv(this->_fds[i].fd, buff, sizeof(buff), 0);
+                        if (res == 0) {
+                            std::cout << "Client disconnected" << std::endl;
+                            close(this->_fds[i].fd);
+                            this->_fds.erase(this->_fds.begin() + i);
+                            i--;
+                            continue;
+                        } else if (res <0) {
+                            std::cerr << "Coudn't receive message" << std::endl;
+                        } else {
+                            std::cout << buff;
+                        }
+                    }
+                }
             }
         }
     // }

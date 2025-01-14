@@ -1,5 +1,16 @@
 #include "Client.hpp"
+#include <cstddef>
 #include <sched.h>
+
+Client::Client( ) {
+    this->_fd = -1;
+    this->_registered = false;
+}
+
+Client::Client( int fd ) {
+    this->_fd = fd;
+    this->_registered = false;
+}
 
 Client::Client( int fd, std::string address ) {
     this->_fd = fd;
