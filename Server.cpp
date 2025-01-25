@@ -52,6 +52,8 @@ void Server::RunServer( void ) {
     	std::cerr << "Coudn't listen" << std::endl;
     	return ;
     }
+
+
 	for (;;) {
         char ad[1024] = {0};
         gethostname(ad, sizeof(ad));
@@ -93,13 +95,20 @@ void Server::RunServer( void ) {
                        	}
                         struct pollfd fd;
                         memset(&fd, 0, sizeof(fd));
+
                         
                         fd.fd = client_fd;
                         fd.events = POLLIN;
                         this->_fds.push_back(fd);
+                        SendMessage(client_fd, "Connected\n");
                     } else {
                         char buff[1024] = {0};
                         int res =  recv(this->_fds[i].fd, buff, sizeof(buff), 0);
+                        std::string s(buff);
+                        if (s == "hello\n") {
+                            SendMessage(this->_fds[i].fd, "Server : hello back\n");
+                            s.clear();
+                        }
                         if (res == 0) {
                             std::cout << "Client disconnected" << std::endl;
                             close(this->_fds[i].fd);
@@ -112,6 +121,14 @@ void Server::RunServer( void ) {
                             std::cout << buff;
                         }
                     }
+                } else if (this->_fds[i].revents & POLLOUT) {
+                        // SendMessage(client_fd, "Connected\n");
+                        if (!this->_messages[this->_fds[i].fd].empty()) {
+                            if (send(client_fd, this->_messages[this->_fds[i].fd].c_str(), this->_messages[this->_fds[i].fd].length(), 0) == -1) {
+                                std::cerr << "Cound't send message" << std::endl;
+                            }
+                        }
+                        this->_fds[i].events &= ~POLLOUT;
                 }
             }
         }
@@ -128,13 +145,17 @@ void Server::RunServer( void ) {
 	freeaddrinfo(res);
 }
 
-bool	Server::SendMessage( int client_fd, std::string message ) const {
-	if (send(client_fd, message.c_str(), message.length(), 0) == -1) {
-		return false;
-	}
-	return true;
+void	Server::SendMessage( int client_fd, std::string message )  {
+    for (int i = 0; i < this->_fds.size(); i++) {
+        if (this->_fds[i].fd == client_fd) {
+            this->_fds[i].events |= POLLOUT;
+            this->_messages[this->_fds[i].fd] = message;
+            break;
+        }
+    }
 }
 
 Server::~Server() {
+    // should close _fds
 	(this->_sockfd == -1) ? : close(this->_sockfd);
 }
