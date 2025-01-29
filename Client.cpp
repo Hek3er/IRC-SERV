@@ -1,19 +1,23 @@
 #include "Client.hpp"
-#include <cstddef>
-#include <sched.h>
 
 Client::Client( ) {
     this->_fd = -1;
     this->_registered = false;
+	this->_nickname = "guest";
+	this->_username = "guestuser";
 }
 
 Client::Client( int fd ) {
+	this->_nickname = "guest";
+	this->_username = "guestuser";
     this->_fd = fd;
     this->_registered = false;
 }
 
 Client::Client( int fd, std::string address ) {
     this->_fd = fd;
+	this->_nickname = "guest";
+	this->_username = "guestuser";
     this->_address = address;
     this->_registered = false;
 }
@@ -90,4 +94,25 @@ bool Client::CheckNickname( std::string nickname ) const {
 			return false;
 		}
 	return true;
+}
+
+void Client::QueueMessage(const std::string& msg) {
+	this->_messages.push(msg);
+}
+
+bool Client::HasMessages( void ) const {
+	return (!this->_messages.empty());
+}
+
+std::string Client::GetNextMessage( void ) {
+	if (!this->_messages.empty()) {
+		std::string message = this->_messages.front();
+		this->_messages.pop();
+		return message;
+	}
+	return "";
+}
+
+void Client::SendMessage( const std::string& msg ) const {
+	Server::SendMessage(this->_fd, msg);
 }

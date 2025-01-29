@@ -5,6 +5,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+std::map<int, Client> Server::_clients;
+std::vector<struct pollfd> Server::_fds;
+
 Server::Server() {
 	this->_port = 6667;
 	this->_sockfd = -1;
@@ -66,15 +69,6 @@ void Server::RunServer( void ) {
         fd.events = POLLIN;
         this->_fds.push_back(fd);
         
-        // Client  new_client( client_fd );
-        // this->_clients[client_fd] = new_client;
-        
-        // std::cout << "Client is : "  <<  new_client.GetFd() << std::endl;
-        // std::string msg = "Welcome to the server\n";
-        // if (!SendMessage(client_fd, msg)) {
-        // 	std::cerr << "Coudn't send the message" << std::endl;
-        // }
-        
         while(1) {
             int client_fd; 
             
@@ -90,45 +84,52 @@ void Server::RunServer( void ) {
                     if (this->_fds[i].fd == this->_sockfd) {
                         //new client
                         if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
-                      		std::cout << "Coudn't accept" <<std::endl;
+                      		std::cout << "Coudn't accept" << std::endl;
                       		// return ; // should be removed because the server shoudn't quit
                        	}
                         struct pollfd fd;
                         memset(&fd, 0, sizeof(fd));
 
-                        
                         fd.fd = client_fd;
                         fd.events = POLLIN;
                         this->_fds.push_back(fd);
+
+                        Client cl(client_fd);
+                        this->_clients[client_fd] = cl;
+                        std::cout << "Clientfd == " << client_fd << std::endl;
+
                         SendMessage(client_fd, "Connected\n");
                     } else {
                         char buff[1024] = {0};
-                        int res =  recv(this->_fds[i].fd, buff, sizeof(buff), 0);
-                        std::string s(buff);
-                        if (s == "hello\n") {
-                            SendMessage(this->_fds[i].fd, "Server : hello back\n");
-                            s.clear();
+                        int res = recv(this->_fds[i].fd, buff, sizeof(buff), 0);
+
+                        std::string test(buff);
+                        if (test == "hello\n") {
+                            this->_clients[this->_fds[i].fd].SendMessage("welcome to the server\n");
                         }
+
                         if (res == 0) {
                             std::cout << "Client disconnected" << std::endl;
                             close(this->_fds[i].fd);
                             this->_fds.erase(this->_fds.begin() + i);
-                            i--;
                             continue;
                         } else if (res <0) {
                             std::cerr << "Coudn't receive message" << std::endl;
                         } else {
-                            std::cout << buff;
+                            std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << buff;
                         }
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
-                        // SendMessage(client_fd, "Connected\n");
-                        if (!this->_messages[this->_fds[i].fd].empty()) {
-                            if (send(client_fd, this->_messages[this->_fds[i].fd].c_str(), this->_messages[this->_fds[i].fd].length(), 0) == -1) {
-                                std::cerr << "Cound't send message" << std::endl;
-                            }
+                    int client = this->_fds[i].fd;
+
+                    if (_clients[client].HasMessages()) {
+                        std::string msg = _clients[client].GetNextMessage();
+                        if ((send(client, msg.c_str(), msg.length(), 0)) == -1) {
+                            std::cerr << "Cound't send message to " << client << std::endl;
                         }
+                    } else {
                         this->_fds[i].events &= ~POLLOUT;
+                    }
                 }
             }
         }
@@ -146,12 +147,17 @@ void Server::RunServer( void ) {
 }
 
 void	Server::SendMessage( int client_fd, std::string message )  {
-    for (int i = 0; i < this->_fds.size(); i++) {
-        if (this->_fds[i].fd == client_fd) {
-            this->_fds[i].events |= POLLOUT;
-            this->_messages[this->_fds[i].fd] = message;
-            break;
+    if (_clients.find(client_fd) != _clients.end()) {
+        _clients[client_fd].QueueMessage(message);
+
+        for (size_t i = 0; i < _fds.size(); i++) {
+            if (client_fd == _fds[i].fd) {
+                _fds[i].events |= POLLOUT;
+                break;
+            }
         }
+    } else {
+        std::cerr << "Client Not found fd : " << client_fd << std::endl;
     }
 }
 
