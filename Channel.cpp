@@ -23,23 +23,33 @@ Channel::Channel(std::string channel_name, std::string channel_key)
 Channel::~Channel() {}
 
 
-bool Channel::addMember(std::string nickname) {
-    return (members.insert(nickname).second);
+void Channel::addMember(int fd) {
+    clients_fd.insert(fd);
 }
-bool Channel::removeMemeber(std::string nickname) {
-    return (members.erase(nickname) > 0); 
+void Channel::addOp(int fd) {
+    if(clients_fd.find(fd) != clients_fd.end())
+        operators_fd.insert(fd);
 }
-bool Channel::upgradeOp(std::string nickname) {
-    if (members.find(nickname) != members.end())
-        return (members.insert(nickname).second);
-    return false;
+void Channel::removeMemeber(int fd) {
+    clients_fd.erase(fd);
 }
-bool Channel::downgradeOp(std::string nickname) {
-    return (operators.erase(nickname) > 0);
-}
-bool Channel::isOp(std::string nickname) {
-    return (operators.find(nickname) != operators.end());
-}
+// bool Channel::addMember(std::string nickname) {
+//     return (members.insert(nickname).second);
+// }
+// bool Channel::removeMemeber(std::string nickname) {
+//     return (members.erase(nickname) > 0); 
+// }
+// bool Channel::upgradeOp(std::string nickname) {
+//     if (members.find(nickname) != members.end())
+//         return (members.insert(nickname).second);
+//     return false;
+// }
+// bool Channel::downgradeOp(std::string nickname) {
+//     return (operators.erase(nickname) > 0);
+// }
+// bool Channel::isOp(std::string nickname) {
+//     return (operators.find(nickname) != operators.end());
+// }
 
 
 std::string Channel::getName() {
@@ -55,7 +65,7 @@ size_t Channel::getLimit() {
     return limit;
 }
 size_t Channel::getUserNum() {
-    return members.size();
+    return clients_fd.size();
 }
 
 void Channel::setlimit(size_t n) {
@@ -73,47 +83,37 @@ bool Channel::isTopicRes() {
     return topic_res;
 }
 
-bool Channel::isUserWelcomed(std::string nickname) {
+bool Channel::isUserWelcomed(int fd) {
     if (!invite_only)
         return true;
-    return invited_users.find(nickname) != invited_users.end();
+    return inviteds_fd.find(fd) != inviteds_fd.end();
 }
 
-void Channel::printChannelInfo() const {
-    std::cout << "\n=== Channel Information ===" << std::endl;
-    std::cout << "Name: " << name << std::endl;
+// void Channel::printChannelInfo() const {
+//     std::cout << "\n=== Channel Information ===" << std::endl;
+//     std::cout << "Name: " << name << std::endl;
     
-    // Topic
-    std::cout << "Topic: " << (topic.empty() ? "No topic set" : topic) << std::endl;
-    std::cout << "Topic Restriction: " << (topic_res ? "Yes" : "No") << std::endl;
+//     // Topic
+//     std::cout << "Topic: " << (topic.empty() ? "No topic set" : topic) << std::endl;
+//     std::cout << "Topic Restriction: " << (topic_res ? "Yes" : "No") << std::endl;
     
-    // Security Settings
-    std::cout << "Key Protected: " << (isKeyProtected ? "Yes" : "No") << std::endl;
-    if (isKeyProtected)
-        std::cout << "Key: " << key << std::endl;
+//     // Security Settings
+//     std::cout << "Key Protected: " << (isKeyProtected ? "Yes" : "No") << std::endl;
+//     if (isKeyProtected)
+//         std::cout << "Key: " << key << std::endl;
     
-    std::cout << "Invite Only: " << (invite_only ? "Yes" : "No") << std::endl;
+//     std::cout << "Invite Only: " << (invite_only ? "Yes" : "No") << std::endl;
     
-    // User Limits
-    std::cout << "User Limit: " << (limit > 0 ? std::to_string(limit) : "No limit") << std::endl;
-    std::cout << "Current Users: " << members.size() << std::endl;
+//     // User Limits
+//     std::cout << "User Limit: " << (limit > 0 ? std::to_string(limit) : "No limit") << std::endl;
+//     std::cout << "Current Users: " << clients_fd.size() << std::endl;
     
-    // Members List
-    std::cout << "\nMembers:" << std::endl;
-    for (const auto& member : members) {
-        std::cout << "- " << member;
-        if (operators.find(member) != operators.end())
-            std::cout << " (operator)";
-        std::cout << std::endl;
-    }
+//     // Members List
+//     std::cout << "\nMembers:" << std::endl;
+//     for (const auto& member : clients) {
+//         std::cout << "- " << member.GetNickname();
+//         std::cout << std::endl;
+//     }
     
-    // Invited Users (if invite-only)
-    if (invite_only && !invited_users.empty()) {
-        std::cout << "\nInvited Users:" << std::endl;
-        for (const auto& invited : invited_users) {
-            std::cout << "- " << invited << std::endl;
-        }
-    }
-    
-    std::cout << "========================\n" << std::endl;
-}
+//     std::cout << "========================\n" << std::endl;
+// }

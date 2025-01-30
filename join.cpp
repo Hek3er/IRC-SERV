@@ -1,21 +1,6 @@
 #include "Channel.hpp"
 #include <vector>
 
-//JOIN "#channel1,#channel2,#channel3 key1,key2"
-
-// bool    acceptUser(Channel& ch, std::string _user)
-// {
-
-// }
-
-// void    addChannel(std::vector<Channel>& ch_list,
-//     const std::pair<std::string, std::string>& ch_key, std::string _user) {
-
-    
-
-
-// }
-
 int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
 {
     for (int i = 0; i < ch_list.size(); i++) {
@@ -27,7 +12,7 @@ int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
     return (-1);
 }
 
-bool    joinChannel(std::vector<Channel>& ch_list, const std::string& channel, const std::string& key, const std::string& user)
+bool    joinChannel(std::vector<Channel>& ch_list, const std::string& channel, const std::string& key, Client& clt)
 {
     if (channel[0] != '#' && channel[0] != '&')
     {
@@ -47,28 +32,28 @@ bool    joinChannel(std::vector<Channel>& ch_list, const std::string& channel, c
             //no place left
             return false;
         }
-        if (targetCH.isInviteOnly() && !targetCH.isUserWelcomed(user))
+        if (targetCH.isInviteOnly() && !targetCH.isUserWelcomed(clt.GetFd()))
         {
             //not welcomed
             return false;
         }
 
-        targetCH.addMember(user);
+        targetCH.addMember(clt.GetFd());
         //check password;
         //check limit;
         //check if is invited;
     }
     else {
         Channel new_ch(channel, key);
-        new_ch.addMember(user);
-        new_ch.upgradeOp(user);
+        new_ch.addMember(clt.GetFd());
+        new_ch.addOp(clt.GetFd());
         ch_list.push_back(new_ch);
     }
     return true;
     
 }
 
-bool    joinCmd(std::vector<Channel>& ch_list, std::string args, std::string _user) {
+bool    joinCmd(std::vector<Channel>& ch_list, std::string args, Client& clt) {
     std::cout<<"starting...\n";
     std::vector<std::string> channels;
     std::vector<std::string> keys;
@@ -106,7 +91,7 @@ bool    joinCmd(std::vector<Channel>& ch_list, std::string args, std::string _us
 
     for (int i = 0; i < channels.size(); i++) {
         std::string channel_key = (i < keys.size()) ? keys[i] : "";
-        if(joinChannel(ch_list, channels[i], channel_key, _user))
+        if(joinChannel(ch_list, channels[i], channel_key, clt))
             std::cout<<"JOIN SUCCESSFULY!!\n";
     }
     std::cout<<"done!\n";

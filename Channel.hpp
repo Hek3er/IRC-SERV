@@ -1,7 +1,9 @@
 #pragma once
 #include <iostream>
-#include <set>
+#include <map>
 #include <vector>
+#include <set>
+#include "Client.hpp"
 
 class Channel {
     private:
@@ -12,25 +14,29 @@ class Channel {
         bool        invite_only;
         bool        topic_res;
         bool        isKeyProtected;
-        std::set<std::string> operators;
-        std::set<std::string> members;
-        std::set<std::string> invited_users;
+        std::set<int> clients_fd;          // Store just fds
+        std::set<int> operators_fd;
+        std::set<int> inviteds_fd;
+        // std::set<std::string> operators;
+        // std::set<std::string> members;
+        // std::set<std::string> invited_users;
 
     public:
         Channel();
         Channel(std::string channel_name);
         Channel(std::string channel_name, std::string channel_key);
+        Channel(Channel& cpy);
         ~Channel();
 
-        bool addMember(std::string nickname);
-        bool removeMemeber(std::string nickname);
-        bool upgradeOp(std::string nickname);
-        bool downgradeOp(std::string nickname);
-        bool isOp(std::string nickname);
+        void addMember(int fd);
+        void    removeMemeber(int fd);
+        void addOp(int fd);
+        //bool downgradeOp(Client& clt);
+        // bool isOp(Client& clt);
 
-        bool    setKey(std::string nickname, std::string _key);
-        bool    setTopic(std::string nickname, std::string _topic);
-        bool    setLimit(std::string nickname, size_t _limit);
+        // bool    setKey(std::string nickname, std::string _key);
+        // bool    setTopic(std::string nickname, std::string _topic);
+        // bool    setLimit(std::string nickname, size_t _limit);
         void    setlimit(size_t n);
         std::string getName();
         std::string getTopic();
@@ -42,11 +48,11 @@ class Channel {
         bool getKeyProtected();
         bool isTopicRes();
 
-        bool isUserWelcomed(std::string nickname);
+        bool isUserWelcomed(int fd);
 
         void printChannelInfo() const;
 
 
 };
 
-bool    joinCmd(std::vector<Channel>& ch_list, std::string args, std::string _user);
+bool    joinCmd(std::vector<Channel>& ch_list, std::string args, Client& clt);
