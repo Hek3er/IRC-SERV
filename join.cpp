@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Server.hpp"
 #include <vector>
 
 int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
@@ -12,11 +13,10 @@ int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
     return (-1);
 }
 
-bool    joinChannel(std::vector<Channel>& ch_list, const std::string& channel, const std::string& key, Client& clt)
+bool    joinChannel(Server& ss, std::vector<Channel>& ch_list, const std::string& channel, const std::string& key, Client& clt)
 {
     if (channel[0] != '#' && channel[0] != '&')
     {
-
         return false;
     }
     int i = channelExiste(ch_list, channel);
@@ -39,6 +39,7 @@ bool    joinChannel(std::vector<Channel>& ch_list, const std::string& channel, c
         }
 
         targetCH.addMember(clt.GetFd());
+        targetCH.broadcastJoin(ss, clt.GetFd());
         //check password;
         //check limit;
         //check if is invited;
@@ -48,18 +49,22 @@ bool    joinChannel(std::vector<Channel>& ch_list, const std::string& channel, c
         new_ch.addMember(clt.GetFd());
         new_ch.addOp(clt.GetFd());
         ch_list.push_back(new_ch);
+        new_ch.broadcastJoin(ss, clt.GetFd());
     }
     return true;
     
 }
 
-bool    joinCmd(std::vector<Channel>& ch_list, std::string args, Client& clt) {
+bool    joinCmd(Server& irc_srv, Client& clt) {
     std::cout<<"starting...\n";
     std::vector<std::string> channels;
     std::vector<std::string> keys;
     std::string channels_list;
     std::string key_list;
 
+    std::vector<Channel>& ch_list = irc_srv.getChannelList();
+    std::string args = clt.cmds;
+//PARSSING:
     size_t space_pos = args.find(' ');
     if (space_pos != std::string::npos)
     {
@@ -88,10 +93,11 @@ bool    joinCmd(std::vector<Channel>& ch_list, std::string args, Client& clt) {
     }
     if (!key_list.empty())
         keys.push_back(key_list);
+//END
 
     for (int i = 0; i < channels.size(); i++) {
         std::string channel_key = (i < keys.size()) ? keys[i] : "";
-        if(joinChannel(ch_list, channels[i], channel_key, clt))
+        if(joinChannel(irc_srv, ch_list, channels[i], channel_key, clt))
             std::cout<<"JOIN SUCCESSFULY!!\n";
     }
     std::cout<<"done!\n";

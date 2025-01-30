@@ -1,9 +1,14 @@
 #pragma once
+
 #include <iostream>
 #include <map>
 #include <vector>
 #include <set>
 #include "Client.hpp"
+#include "Server.hpp"
+
+class Server;
+class Client;
 
 class Channel {
     private:
@@ -25,7 +30,8 @@ class Channel {
         Channel();
         Channel(std::string channel_name);
         Channel(std::string channel_name, std::string channel_key);
-        Channel(Channel& cpy);
+        Channel(const Channel& cpy);
+        Channel& operator=(const Channel& other);
         ~Channel();
 
         void addMember(int fd);
@@ -52,7 +58,9 @@ class Channel {
 
         void printChannelInfo() const;
 
+        void broadcastJoin(Server& server, int joiner_fd);
+
 
 };
 
-bool    joinCmd(std::vector<Channel>& ch_list, std::string args, Client& clt);
+bool    joinCmd(Server& irc_srv, Client& clt);

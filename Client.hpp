@@ -4,8 +4,11 @@
 	#include <queue>
 	#include "Server.hpp"
 
+// class Server;
+
 	class Client {
 	public:
+		std::string cmds;
 		Client( );
 		Client( int fd );
 		Client( int fd, std::string address );
@@ -33,6 +36,7 @@
 		bool	HasMessages( void ) const;
 
 	private:
+		
 		bool        _registered;
 		int			_fd;
 		std::string _nickname;

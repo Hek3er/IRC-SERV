@@ -11,8 +11,10 @@
 #include <cstring> // memset
 #include "Client.hpp"
 #include <poll.h>
+#include "Channel.hpp"
 
 class Client;
+class Channel;
 
 class Server {
 public:
@@ -24,6 +26,10 @@ public:
 	std::string GetPassword( void ) const;
 	~Server();
 
+	//added by soufiane
+	std::vector<Channel>& getChannelList();
+	Client& getClient(int fd);
+
 private:
 	int					_port; // the server port
 	int					_sockfd; 
@@ -31,4 +37,7 @@ private:
 	// std::vector<Client> _clients;
 	static std::map<int, Client> _clients; // map that takes an int [fd] as a key and the value is the obj of the client with that fd
 	static std::vector<struct pollfd> _fds;
+
+	//added by soufiane
+	std::vector<Channel> channels;
 };

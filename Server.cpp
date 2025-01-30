@@ -1,9 +1,11 @@
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 #include <netdb.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 
 std::map<int, Client> Server::_clients;
 std::vector<struct pollfd> Server::_fds;
@@ -96,6 +98,9 @@ void Server::RunServer( void ) {
 
                         Client cl(client_fd);
                         this->_clients[client_fd] = cl;
+                        //added by soufiane: test JOIN CMD:
+                        joinCmd(*this, cl);
+                        //done
                         std::cout << "Clientfd == " << client_fd << std::endl;
 
                         SendMessage(client_fd, "Connected\n");
@@ -164,4 +169,12 @@ void	Server::SendMessage( int client_fd, std::string message )  {
 Server::~Server() {
     // should close _fds
 	(this->_sockfd == -1) ? : close(this->_sockfd);
+}
+
+//added by Soufiane:
+std::vector<Channel>& Server::getChannelList() {
+    return channels;
+}
+Client& Server::getClient(int fd) {
+    return _clients.at(fd);
 }

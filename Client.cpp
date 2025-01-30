@@ -1,6 +1,7 @@
 #include "Client.hpp"
 
 Client::Client( ) {
+	cmds = "#channel";
     this->_fd = -1;
     this->_registered = false;
 	this->_nickname = "guest";
@@ -8,6 +9,7 @@ Client::Client( ) {
 }
 
 Client::Client( int fd ) {
+	cmds = "#channel";
 	this->_nickname = "guest";
 	this->_username = "guestuser";
     this->_fd = fd;
@@ -15,6 +17,7 @@ Client::Client( int fd ) {
 }
 
 Client::Client( int fd, std::string address ) {
+	cmds = "#channel";
     this->_fd = fd;
 	this->_nickname = "guest";
 	this->_username = "guestuser";
@@ -23,6 +26,7 @@ Client::Client( int fd, std::string address ) {
 }
 
 Client::Client( int fd, std::string nickname, std::string username, std::string address ) {
+	cmds = "#channel";
 	this->_fd = fd;
 	this->_nickname = nickname;
 	this->_username = username;

@@ -20,6 +20,36 @@ Channel::Channel(std::string channel_name, std::string channel_key)
     isKeyProtected = true;
     }
 
+Channel::Channel(const Channel& cpy) :
+    name(cpy.name),
+    topic(cpy.topic),
+    key(cpy.key),
+    limit(cpy.limit),
+    invite_only(cpy.invite_only),
+    topic_res(cpy.topic_res),
+    isKeyProtected(cpy.isKeyProtected),
+    clients_fd(cpy.clients_fd),
+    operators_fd(cpy.operators_fd),
+    inviteds_fd(cpy.inviteds_fd)
+{
+}
+
+Channel& Channel::operator=(const Channel& other) {
+    if (this != &other) {
+        name = other.name;
+        topic = other.topic;
+        key = other.key;
+        limit = other.limit;
+        invite_only = other.invite_only;
+        topic_res = other.topic_res;
+        isKeyProtected = other.isKeyProtected;
+        clients_fd = other.clients_fd;
+        operators_fd = other.operators_fd;
+        inviteds_fd = other.inviteds_fd;
+    }
+    return *this;
+}
+
 Channel::~Channel() {}
 
 
@@ -87,6 +117,18 @@ bool Channel::isUserWelcomed(int fd) {
     if (!invite_only)
         return true;
     return inviteds_fd.find(fd) != inviteds_fd.end();
+}
+
+void Channel::broadcastJoin(Server& server, int joiner_fd) {
+    const Client& joiner = server.getClient(joiner_fd);
+    std::string join_message = ":" + joiner.GetNickname() + "!" + 
+                              joiner.GetUsername() + "@" + 
+                              joiner.GetAddress() + " JOIN " + name;
+    
+    for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
+        int fd = *it;
+        server.SendMessage(fd, join_message);
+    }
 }
 
 // void Channel::printChannelInfo() const {
