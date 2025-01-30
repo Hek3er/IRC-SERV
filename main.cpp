@@ -2,7 +2,6 @@
 
 int main() {
 
-	
 	Server s;
 
 	s.RunServer();
