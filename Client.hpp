@@ -8,7 +8,6 @@
 
 	class Client {
 	public:
-		std::string cmds;
 		Client( );
 		Client( int fd );
 		Client( int fd, std::string address );

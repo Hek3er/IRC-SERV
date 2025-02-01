@@ -13,8 +13,9 @@ int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
     return (-1);
 }
 
-bool    joinChannel(Server& ss, std::vector<Channel>& ch_list, const std::string& channel, const std::string& key, Client& clt)
+bool    joinChannel(Server& ss, const std::string& channel, const std::string& key, Client& clt)
 {
+    std::vector<Channel>& ch_list = ss.getChannelList();
     if (channel[0] != '#' && channel[0] != '&')
     {
         return false;
@@ -37,7 +38,9 @@ bool    joinChannel(Server& ss, std::vector<Channel>& ch_list, const std::string
             //not welcomed
             return false;
         }
-
+        if (targetCH.isMember(clt.GetFd()))
+            return false;
+        
         targetCH.addMember(clt.GetFd());
         targetCH.broadcastJoin(ss, clt.GetFd());
         //check password;
@@ -55,50 +58,25 @@ bool    joinChannel(Server& ss, std::vector<Channel>& ch_list, const std::string
     
 }
 
-bool    joinCmd(Server& irc_srv, Client& clt) {
-    std::cout<<"starting...\n";
+bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args) {
     std::vector<std::string> channels;
     std::vector<std::string> keys;
-    std::string channels_list;
-    std::string key_list;
 
-    std::vector<Channel>& ch_list = irc_srv.getChannelList();
-    std::string args = clt.cmds;
 //PARSSING:
-    size_t space_pos = args.find(' ');
-    if (space_pos != std::string::npos)
-    {
-        channels_list = args.substr(0, space_pos);
-        key_list = args.substr(space_pos + 1);
-    }
-    else
-        channels_list = args;
-
-    size_t pos = 0;
-    while ((pos = channels_list.find(",")) != std::string::npos) {
-        std::string new_ch = channels_list.substr(0, pos);
-        if (!new_ch.empty())
-            channels.push_back(new_ch);
-        channels_list.erase(0, pos + 1);
-    }
-    if (!channels_list.empty())
-        channels.push_back(channels_list);
-
-    pos = 0;
-    while ((pos = key_list.find(",")) != std::string::npos) {
-        std::string new_key = key_list.substr(0, pos);
-        if (!new_key.empty())
-            keys.push_back(new_key);
-        key_list.erase(0, pos + 1);
-    }
-    if (!key_list.empty())
-        keys.push_back(key_list);
-//END
+    // if (args.size() < 3)
+    //     return false;
+    
+    channels = split(args[1], ','); 
+    keys = split(args[2], ',');
+ 
 
     for (int i = 0; i < channels.size(); i++) {
         std::string channel_key = (i < keys.size()) ? keys[i] : "";
-        if(joinChannel(irc_srv, ch_list, channels[i], channel_key, clt))
+        std::cout<<channels[i]<<"\n";
+        if(joinChannel(irc_srv, channels[i], channel_key, clt))
             std::cout<<"JOIN SUCCESSFULY!!\n";
+        else 
+            std::cout<<"ERROR\n";
     }
     std::cout<<"done!\n";
     return true;     

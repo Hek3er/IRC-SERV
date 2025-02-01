@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "replies.hpp"
 
 Channel::Channel() {}
 
@@ -60,9 +61,20 @@ void Channel::addOp(int fd) {
     if(clients_fd.find(fd) != clients_fd.end())
         operators_fd.insert(fd);
 }
+void   Channel::addInvite(int fd) {
+    inviteds_fd.insert(fd);
+}
 void Channel::removeMemeber(int fd) {
     clients_fd.erase(fd);
 }
+
+bool    Channel::isMember(int fd) {
+    return (clients_fd.find(fd) != clients_fd.end());
+}
+bool    Channel::isOp(int fd) {
+    return (operators_fd.find(fd) != operators_fd.end());
+}
+
 // bool Channel::addMember(std::string nickname) {
 //     return (members.insert(nickname).second);
 // }
@@ -101,6 +113,9 @@ size_t Channel::getUserNum() {
 void Channel::setlimit(size_t n) {
     limit = n;
 }
+void Channel::setTopic(std::string newTopic) {
+    topic = newTopic;
+}
 
 
 bool Channel::isInviteOnly() {
@@ -121,14 +136,33 @@ bool Channel::isUserWelcomed(int fd) {
 
 void Channel::broadcastJoin(Server& server, int joiner_fd) {
     const Client& joiner = server.getClient(joiner_fd);
-    std::string join_message = ":" + joiner.GetNickname() + "!" + 
-                              joiner.GetUsername() + "@" + 
-                              joiner.GetAddress() + " JOIN " + name;
-    
+    std::string joinreply = JOIN_REPLY(joiner.GetNickname(), joiner.GetUsername(), this->name, joiner.GetAddress());
     for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
         int fd = *it;
-        server.SendMessage(fd, join_message);
+        server.SendMessage(fd, joinreply);
     }
+}
+
+std::vector<std::string> split(std::string str, char del) {
+    std::vector<std::string> result;
+    std::string temp = "";
+    
+    for(int i = 0; i < str.length(); i++) {
+        if(str[i] != del) {
+            temp += str[i];
+        }
+        else {
+            if(!temp.empty()) {
+                result.push_back(temp);
+                temp = "";
+            }
+        }
+    }
+    if(!temp.empty()) {
+        result.push_back(temp);
+    }
+    
+    return result;
 }
 
 // void Channel::printChannelInfo() const {

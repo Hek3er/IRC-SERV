@@ -5,6 +5,8 @@
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "stdlib.h"
+#include "stdio.h"
 
 
 std::map<int, Client> Server::_clients;
@@ -98,9 +100,6 @@ void Server::RunServer( void ) {
 
                         Client cl(client_fd);
                         this->_clients[client_fd] = cl;
-                        //added by soufiane: test JOIN CMD:
-                        joinCmd(*this, cl);
-                        //done
                         std::cout << "Clientfd == " << client_fd << std::endl;
 
                         SendMessage(client_fd, "Connected\n");
@@ -109,6 +108,7 @@ void Server::RunServer( void ) {
                         int res = recv(this->_fds[i].fd, buff, sizeof(buff), 0);
 
                         std::string test(buff);
+                        std::vector<std::string> args = split(test, ' ');
                         if (test == "hello\n") {
                             this->_clients[this->_fds[i].fd].SendMessage("welcome to the server\n");
                         }
@@ -123,6 +123,17 @@ void Server::RunServer( void ) {
                         } else {
                             std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << buff;
                         }
+                        // if (test.length() > 4 && test.substr(0,4).compare("JOIN ")) {
+                        //     std::string command = test.substr(5);  // Get everything after "JOIN "
+                        //     size_t newline_pos = command.find_first_of("\r\n");
+                        //     if (newline_pos != std::string::npos) {
+                        //         command = command.substr(0, newline_pos);  // Remove the newline
+                        //         }
+                        //     joinCmd(*this, _clients[this->_fds[i].fd], command);
+                        //     //joinCmd(*this, _clients[this->_fds[i].fd], test.substr(5));
+                        // }
+                        if (args[0] == "JOIN")
+                            joinCmd(*this, _clients[this->_fds[i].fd], args);
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
                     int client = this->_fds[i].fd;
@@ -177,4 +188,21 @@ std::vector<Channel>& Server::getChannelList() {
 }
 Client& Server::getClient(int fd) {
     return _clients.at(fd);
+}
+
+Channel* Server::getChannel(std::string channelName) {
+    for(int i = 0; i < channels.size(); i++) {
+        if (channels[i].getName() == channelName)
+            return &channels[i];
+    }
+    return NULL;
+}
+
+Client*	Server::getClientByNick(std::string nick) {
+    for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->second.GetNickname() == nick) {
+            return &(it->second);
+        }
+    }
+    return NULL;
 }

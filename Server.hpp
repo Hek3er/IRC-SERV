@@ -28,6 +28,8 @@ public:
 
 	//added by soufiane
 	std::vector<Channel>& getChannelList();
+	Channel* getChannel(std::string channelName);
+	Client*	getClientByNick(std::string nick);
 	Client& getClient(int fd);
 
 private:

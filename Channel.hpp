@@ -34,9 +34,13 @@ class Channel {
         Channel& operator=(const Channel& other);
         ~Channel();
 
-        void addMember(int fd);
+        void    addMember(int fd);
         void    removeMemeber(int fd);
-        void addOp(int fd);
+        void    addOp(int fd);
+        void    addInvite(int fd);
+        bool    isMember(int fd);
+        bool    isOp(int fd);
+
         //bool downgradeOp(Client& clt);
         // bool isOp(Client& clt);
 
@@ -44,6 +48,8 @@ class Channel {
         // bool    setTopic(std::string nickname, std::string _topic);
         // bool    setLimit(std::string nickname, size_t _limit);
         void    setlimit(size_t n);
+        void    setTopic(std::string newTopic);
+        
         std::string getName();
         std::string getTopic();
         std::string getKey();
@@ -63,4 +69,6 @@ class Channel {
 
 };
 
-bool    joinCmd(Server& irc_srv, Client& clt);
+bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
+void    handelInvite(Server& server,Client& clt, std::vector<std::string>& args);
+std::vector<std::string> split(std::string str, char del);
