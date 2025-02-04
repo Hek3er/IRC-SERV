@@ -6,7 +6,7 @@
 
 #define INVITE_REPLY(client, invited_user, ipadress, nickname, channel) ":" + client + "!" + invited_user + "@" + ipadress + " INVITE " + nickname + " " + channel + "\r\n"
 
-
+#define MODE_CHANGE_REPLY(nick, user, host, channel, cmd) ":" + nick + "!" + username + "@" + host + " MODE " + channel + " " + cmd + "\r\n"
 //ERRORS
 
 #define ERR_NOSUCHNICK(client , nick) "401" + client + " " + nick + ":No such nick\r\n"

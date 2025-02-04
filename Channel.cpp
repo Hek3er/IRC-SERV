@@ -171,6 +171,13 @@ void Channel::broadcastJoin(Server& server, int joiner_fd) {
     }
 }
 
+void    Channel::brodcastMode(Server& server, std::string modeReply) {
+    for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
+        int fd = *it;
+        server.SendMessage(fd, modeReply);
+    }
+}
+
 std::vector<std::string> split(std::string str, char del) {
     std::vector<std::string> result;
     std::string temp = "";
