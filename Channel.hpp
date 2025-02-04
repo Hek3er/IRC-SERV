@@ -16,15 +16,13 @@ class Channel {
         std::string topic;
         std::string key;
         size_t      limit;
+        bool        user_limit;
         bool        invite_only;
         bool        topic_res;
-        bool        isKeyProtected;
+        bool        is_Key_Protected;
         std::set<int> clients_fd;          // Store just fds
         std::set<int> operators_fd;
         std::set<int> inviteds_fd;
-        // std::set<std::string> operators;
-        // std::set<std::string> members;
-        // std::set<std::string> invited_users;
 
     public:
         Channel();
@@ -36,6 +34,7 @@ class Channel {
 
         void    addMember(int fd);
         void    removeMemeber(int fd);
+        void    removeOp(int fd);
         void    addOp(int fd);
         void    addInvite(int fd);
         bool    isMember(int fd);
@@ -47,6 +46,9 @@ class Channel {
         // bool    setKey(std::string nickname, std::string _key);
         // bool    setTopic(std::string nickname, std::string _topic);
         // bool    setLimit(std::string nickname, size_t _limit);
+        void    setInvite(bool condition);
+        void    setTopicRestriction(bool condition);
+        void    setLimitCondition(bool condition);
         void    setlimit(size_t n);
         void    setTopic(std::string newTopic);
         
@@ -57,8 +59,9 @@ class Channel {
         size_t  getUserNum();
 
         bool isInviteOnly();
-        bool getKeyProtected();
+        bool isKeyProtected();
         bool isTopicRes();
+        bool isLimit();
 
         bool isUserWelcomed(int fd);
 
@@ -70,5 +73,6 @@ class Channel {
 };
 
 bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
-void    handelInvite(Server& server,Client& clt, std::vector<std::string>& args);
+void    inviteCmd(Server& server,Client& clt, std::vector<std::string> args);
+void    modeCmd(Server& ss,int clt_fd, std::vector<std::string>& args);
 std::vector<std::string> split(std::string str, char del);

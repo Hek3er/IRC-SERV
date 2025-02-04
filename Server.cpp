@@ -134,6 +134,10 @@ void Server::RunServer( void ) {
                         // }
                         if (args[0] == "JOIN")
                             joinCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "INVITE")
+                            inviteCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "MODE")
+                            modeCmd(*this, this->_fds[i].fd, args);
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
                     int client = this->_fds[i].fd;

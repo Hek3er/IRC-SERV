@@ -1,5 +1,6 @@
 #include "Channel.hpp"
 #include "Server.hpp"
+#include "replies.hpp"
 #include <vector>
 
 int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
@@ -18,24 +19,24 @@ bool    joinChannel(Server& ss, const std::string& channel, const std::string& k
     std::vector<Channel>& ch_list = ss.getChannelList();
     if (channel[0] != '#' && channel[0] != '&')
     {
+        clt.SendMessage(ERR_NOSUCHCHANNEL(clt.GetUsername(), channel));
         return false;
     }
     int i = channelExiste(ch_list, channel);
     if (i != -1)
     {
         Channel& targetCH = ch_list[i];
-        if (targetCH.getKeyProtected() && targetCH.getKey() != key) {
-            //wrong password
+        if (targetCH.isKeyProtected() && targetCH.getKey() != key) {
+            clt.SendMessage(ERR_BADCHANNELKEY(clt.GetUsername(), channel));
             return false;
         }
-        if (targetCH.getLimit() != std::string::npos &&
-            targetCH.getLimit() < targetCH.getUserNum() + 1) {
-            //no place left
+        if (targetCH.isLimit() && targetCH.getLimit() < targetCH.getUserNum() + 1) {
+            clt.SendMessage(ERR_CHANNELISFULL(clt.GetUsername(), channel));
             return false;
         }
         if (targetCH.isInviteOnly() && !targetCH.isUserWelcomed(clt.GetFd()))
         {
-            //not welcomed
+            clt.SendMessage(ERR_INVITEONLYCHAN(clt.GetUsername(), channel));
             return false;
         }
         if (targetCH.isMember(clt.GetFd()))
@@ -43,9 +44,6 @@ bool    joinChannel(Server& ss, const std::string& channel, const std::string& k
         
         targetCH.addMember(clt.GetFd());
         targetCH.broadcastJoin(ss, clt.GetFd());
-        //check password;
-        //check limit;
-        //check if is invited;
     }
     else {
         Channel new_ch(channel, key);
@@ -62,9 +60,10 @@ bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args) {
     std::vector<std::string> channels;
     std::vector<std::string> keys;
 
-//PARSSING:
-    // if (args.size() < 3)
-    //     return false;
+    if (args.size() == 1) {
+        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), args[0]));
+        return false;
+    }
     
     channels = split(args[1], ','); 
     keys = split(args[2], ',');

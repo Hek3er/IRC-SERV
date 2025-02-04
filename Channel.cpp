@@ -9,16 +9,23 @@ Channel::Channel(std::string channel_name) : name(channel_name) {
     limit = std::string::npos;
     invite_only = false;
     topic_res = false;
-    isKeyProtected = false;
+    is_Key_Protected = false;
 }
 
 Channel::Channel(std::string channel_name, std::string channel_key)
-    : name(channel_name), key(channel_key) {
+    : name(channel_name) {
     topic = "";
     limit = std::string::npos;
     invite_only = false;
     topic_res = false;
-    isKeyProtected = true;
+    if (!channel_key.empty()) {
+        is_Key_Protected = true;
+        key = channel_key;
+    }
+    else {
+        is_Key_Protected = false;
+        key = "";
+    }
     }
 
 Channel::Channel(const Channel& cpy) :
@@ -28,7 +35,7 @@ Channel::Channel(const Channel& cpy) :
     limit(cpy.limit),
     invite_only(cpy.invite_only),
     topic_res(cpy.topic_res),
-    isKeyProtected(cpy.isKeyProtected),
+    is_Key_Protected(cpy.is_Key_Protected),
     clients_fd(cpy.clients_fd),
     operators_fd(cpy.operators_fd),
     inviteds_fd(cpy.inviteds_fd)
@@ -43,7 +50,7 @@ Channel& Channel::operator=(const Channel& other) {
         limit = other.limit;
         invite_only = other.invite_only;
         topic_res = other.topic_res;
-        isKeyProtected = other.isKeyProtected;
+        is_Key_Protected = other.is_Key_Protected;
         clients_fd = other.clients_fd;
         operators_fd = other.operators_fd;
         inviteds_fd = other.inviteds_fd;
@@ -67,7 +74,9 @@ void   Channel::addInvite(int fd) {
 void Channel::removeMemeber(int fd) {
     clients_fd.erase(fd);
 }
-
+void Channel::removeOp(int fd) {
+    operators_fd.erase(fd);
+}
 bool    Channel::isMember(int fd) {
     return (clients_fd.find(fd) != clients_fd.end());
 }
@@ -110,6 +119,16 @@ size_t Channel::getUserNum() {
     return clients_fd.size();
 }
 
+void    Channel::setInvite(bool condition) {
+    invite_only = condition;
+}
+void    Channel::setTopicRestriction(bool condition) {
+    topic_res = condition;
+}
+void    Channel::setLimitCondition(bool condition) {
+    user_limit = condition;
+}
+
 void Channel::setlimit(size_t n) {
     limit = n;
 }
@@ -121,13 +140,15 @@ void Channel::setTopic(std::string newTopic) {
 bool Channel::isInviteOnly() {
     return invite_only;
 }
-bool Channel::getKeyProtected() {
-    return isKeyProtected;
+bool Channel::isKeyProtected() {
+    return is_Key_Protected;
 }
 bool Channel::isTopicRes() {
     return topic_res;
 }
-
+bool Channel::isLimit() {
+    return user_limit;
+}
 bool Channel::isUserWelcomed(int fd) {
     if (!invite_only)
         return true;
@@ -137,9 +158,16 @@ bool Channel::isUserWelcomed(int fd) {
 void Channel::broadcastJoin(Server& server, int joiner_fd) {
     const Client& joiner = server.getClient(joiner_fd);
     std::string joinreply = JOIN_REPLY(joiner.GetNickname(), joiner.GetUsername(), this->name, joiner.GetAddress());
+    std::string list = ":servername 353 " + joiner.GetNickname() + " = " + this->getName() + " :";
+    for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
+        list += server.getClient(*it).GetNickname();
+        list += " ";
+    }
+    list += "\r\n:servername 366 " + joiner.GetNickname() + " " + this->getName() + " :End of /NAMES list\r\n";
     for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
         int fd = *it;
         server.SendMessage(fd, joinreply);
+        server.SendMessage(fd, list);
     }
 }
 
@@ -149,13 +177,13 @@ std::vector<std::string> split(std::string str, char del) {
     
     for(int i = 0; i < str.length(); i++) {
         if(str[i] != del) {
-            temp += str[i];
-        }
-        else {
-            if(!temp.empty()) {
-                result.push_back(temp);
-                temp = "";
+            if(str[i] != '\r' && str[i] != '\n') {
+                temp += str[i];
             }
+        }
+        else if(!temp.empty()) {
+            result.push_back(temp);
+            temp = "";
         }
     }
     if(!temp.empty()) {
