@@ -31,6 +31,10 @@
 		void	QueueMessage(const std::string& msg);
 		std::string GetNextMessage( void );
 		bool	HasMessages( void ) const;
+		
+		void    StoreBuffer( char *buff, int size );
+		bool    IsBufferReady( void ) const;
+		std::string   GetBuffer( void );
 
 	private:
 		bool        _registered;
@@ -39,4 +43,6 @@
 		std::string _username;
 		std::string	_address;
 		std::queue<std::string> _messages;
+		std::string _buffer;
+		bool        _messageCompleted;
 	};

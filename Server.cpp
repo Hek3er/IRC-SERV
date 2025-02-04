@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+
 std::map<int, Client> Server::_clients;
 std::vector<struct pollfd> Server::_fds;
 
@@ -38,7 +39,11 @@ void Server::RunServer( void ) {
 	str_port = ss.str();
 	ss.clear();
 
-	getaddrinfo(NULL, str_port.c_str(), &hints, &res); // TODO error check it
+	int ret = getaddrinfo(NULL, str_port.c_str(), &hints, &res);
+	if (ret < 0) {
+	   std::cerr << "Error : getaddrinfo failed" << std::endl;
+		return ;
+	}
 
 	// create a socket for the server (it listens for incomming connections only!)
 	this->_sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -101,22 +106,34 @@ void Server::RunServer( void ) {
                         SendMessage(client_fd, "Connected\n");
                     } else {
                         char buff[1024] = {0};
-                        int res = recv(this->_fds[i].fd, buff, sizeof(buff), 0);
+                        int res = recv(this->_fds[i].fd, buff, 1023, 0);
+                        if (res < 0) {
+                            std::cerr << __FILE__ << " : " <<  __LINE__ << " coudn't read from recv" << std::endl;
+                        }
+                        
+                        this->_clients[this->_fds[i].fd].StoreBuffer(buff, res);
+                        
+                        // std::cout << "read : " << res << " from buffer: " << buff << std::endl;
 
                         std::string test(buff);
+                        // for (int i = 0; i < test.length() + 1; i++) {
+                        //     std::cout << test[i] << " = " << (int)(test[i]) << std::endl;
+                        // }
                         if (test == "hello\n") {
                             this->_clients[this->_fds[i].fd].SendMessage("welcome to the server\n");
                         }
 
                         if (res == 0) {
-                            std::cout << "Client disconnected" << std::endl;
+                            std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
                             close(this->_fds[i].fd);
                             this->_fds.erase(this->_fds.begin() + i);
                             continue;
                         } else if (res <0) {
                             std::cerr << "Coudn't receive message" << std::endl;
                         } else {
-                            std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << buff;
+                            if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
+                                std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << this->_clients[this->_fds[i].fd].GetBuffer();
+                            }
                         }
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
