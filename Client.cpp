@@ -125,7 +125,7 @@ void Client::StoreBuffer( char *str, int size ) {
     if (str == NULL)
         return ;
     this->_buffer += std::string(str);
-    if (str[size - 1] != '\n' || str[size - 1] != '\r\n') {
+    if (str[size - 1] != '\n') {
         this->_messageCompleted = false;
     } else {
         this->_messageCompleted = true;
