@@ -4,6 +4,8 @@
 	#include <queue>
 	#include "Server.hpp"
 
+// class Server;
+
 	class Client {
 	public:
 		Client( );
@@ -37,6 +39,7 @@
 		std::string   GetBuffer( void );
 
 	private:
+		
 		bool        _registered;
 		int			_fd;
 		std::string _nickname;
