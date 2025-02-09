@@ -12,6 +12,7 @@
 #include "Client.hpp"
 #include <poll.h>
 #include "Channel.hpp"
+#include "replies.hpp"
 
 class Client;
 class Channel;

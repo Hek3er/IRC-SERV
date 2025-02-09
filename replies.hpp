@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#define WELCOME_REPLY(nick, ipaddress) ":" + ipaddress + " 001 " + nick + " :Welcome to IRC SERVER " + nick + "!user@host\r\n"
 #define JOIN_REPLY(nick, username, channelname, ipaddress) ":" + nick + "!~" + username + "@" + ipaddress + " JOIN " + channelname + "\r\n"
 
 #define INVITE_REPLY(client, invited_user, ipadress, nickname, channel) ":" + client + "!" + invited_user + "@" + ipadress + " INVITE " + nickname + " " + channel + "\r\n"

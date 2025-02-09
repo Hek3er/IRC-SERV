@@ -122,7 +122,7 @@ void Client::SendMessage( const std::string& msg ) const {
 }
 
 void Client::StoreBuffer( char *str, int size ) {
-    if (str == NULL)
+    if (str == NULL || size == 0)
         return ;
     this->_buffer += std::string(str);
     if (str[size - 1] != '\n') {

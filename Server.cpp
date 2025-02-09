@@ -101,7 +101,7 @@ void Server::RunServer( void ) {
                         this->_clients[client_fd] = cl;
                         std::cout << "Clientfd == " << client_fd << std::endl;
 
-                        SendMessage(client_fd, "Connected\n");
+                        SendMessage(client_fd, WELCOME_REPLY(_clients[client_fd].GetNickname(), std::string(ad)));
                     } else {
                         char buff[1024] = {0};
                         int res = recv(this->_fds[i].fd, buff, 1023, 0);
