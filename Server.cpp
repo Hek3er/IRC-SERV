@@ -12,13 +12,13 @@
 std::map<int, Client> Server::_clients;
 std::vector<struct pollfd> Server::_fds;
 
-Server::Server() {
-	this->_port = 6667;
+Server::Server( std::string port, std::string password ) {
+	this->_port = port;
 	this->_sockfd = -1;
-	this->_password = "dexter";
+	this->_password = password;
 }
 
-int	Server::GetPort( void ) const {
+std::string	Server::GetPort( void ) const {
 	return (this->_port);
 }
 
@@ -26,9 +26,10 @@ std::string Server::GetPassword( void ) const {
 	return (this->_password);
 }
 
+
 void Server::RunServer( void ) {
 	// ⚠️ Maybe i should throw exceptions when error?
-
+	
 	struct addrinfo hints, *res;
 
 	memset(&hints, 0, sizeof(hints));
@@ -36,13 +37,7 @@ void Server::RunServer( void ) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE; // fill my ip address automatically
 
-	std::string str_port;
-	std::stringstream ss;
-	ss << this->_port;
-	str_port = ss.str();
-	ss.clear();
-
-	int ret = getaddrinfo(NULL, str_port.c_str(), &hints, &res);
+	int ret = getaddrinfo(NULL, _port.c_str(), &hints, &res);
 	if (ret < 0) {
 	   std::cerr << "Error : getaddrinfo failed" << std::endl;
 		return ;

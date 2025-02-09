@@ -18,11 +18,11 @@ class Channel;
 
 class Server {
 public:
-	Server();
+	Server( std::string port, std::string password );
     void    RunServer( void );
 	static void	SendMessage( int client_fd, std::string message ) ;
 	// Getters
-	int			GetPort( void ) const;
+	std::string	GetPort( void ) const;
 	std::string GetPassword( void ) const;
 	~Server();
 
@@ -33,7 +33,7 @@ public:
 	Client& getClient(int fd);
 
 private:
-	int					_port; // the server port
+	std::string			_port; // the server port
 	int					_sockfd; 
 	std::string			_password; // password to the server
 	// std::vector<Client> _clients;

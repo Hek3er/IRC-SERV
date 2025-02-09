@@ -20,7 +20,7 @@ void    splitModes(std::vector<std::string> &modes,const std::string& args) {
     }
 }
 
-void    indexParameters(std::vector<std::string> &modes,std::vector<std::string> &paramaters, std::vector<std::pair<std::string, int>>& mode_par_index) {
+void    indexParameters(std::vector<std::string> &modes,std::vector<std::string> &paramaters, std::vector<std::pair<std::string, int> >& mode_par_index) {
     int index = 0;
     for (int i = 0; i < modes.size(); i++) {
         if (modes[i] == "+k" || modes[i] == "+o" || modes[i] == "-o" || modes[i] == "+l")
@@ -70,7 +70,7 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     std::vector<std::string> modes;
     std::vector<std::string> paramaters;
 
-    std::vector<std::pair<std::string, int>> mode_par_index;
+    std::vector<std::pair<std::string, int> > mode_par_index;
 
     Channel* working_ch;
     Client* target_clt;
