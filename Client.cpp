@@ -155,14 +155,19 @@ std::string Client::GetBuffer( void ) {
 
 bool	passCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 {
-	checkPassword(args[1]);
 	try {
-		if ( ((irc_srv.GetPassword()).size() != args[1].size()) )
+		if (clt.getAuthLevel() != LEVEL(0))
 			throw std::runtime_error(
-				"password missmatched"
+				ERR_ALREADYREGISTERED(clt.GetNickname())
 			);
+		if ( ((irc_srv.GetPassword()).size() != args[1].size()) || \
+			(memcmp(irc_srv.GetPassword().c_str(), args[1].c_str(), irc_srv.GetPassword().length()) != 0))
+			throw std::runtime_error(
+				ERR_PASSWDMISMATCH(clt.GetNickname())
+			);
+		clt.SetAuthLevel(1);
 	} catch (const std::exception& e) {
-		clt.SendMessage(ERR_PASSWDMISMATCH(clt.GetNickname()));
+		clt.SendMessage(e.what());
 		return false;
 	}
 }

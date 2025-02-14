@@ -22,4 +22,5 @@
 #define RPL_INVITING(client, nick, channel) "341" + client + " " + nick + " " + channel
 
 // PASS
+#define ERR_ALREADYREGISTERED(client) "462" + client + " :You may not reregister\r\n"
 #define ERR_PASSWDMISMATCH(client) "464" + client + " :Password incorrect\r\n"

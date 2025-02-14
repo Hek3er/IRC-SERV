@@ -147,18 +147,14 @@ void Server::RunServer( void ) {
                         //     joinCmd(*this, _clients[this->_fds[i].fd], command);
                         //     //joinCmd(*this, _clients[this->_fds[i].fd], test.substr(5));
                         // }
-                        if (_clients[client_fd].getAuthLevel() == 0 )
-                        {
-                            if (args[0] == "PASS")
-                                passCmd(*this, _clients[this->_fds[i].fd], args);
-                        } else {
-                            if (args[0] == "JOIN")
-                                joinCmd(*this, _clients[this->_fds[i].fd], args);
-                            if (args[0] == "INVITE")
-                                inviteCmd(*this, _clients[this->_fds[i].fd], args);
-                            if (args[0] == "MODE")
-                                modeCmd(*this, _clients[this->_fds[i].fd], args);
-                        }
+                        if (args[0] == "PASS")
+                            passCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "JOIN" && _clients[client_fd].getAuthLevel() == LEVEL(2))
+                            joinCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "INVITE" && _clients[client_fd].getAuthLevel() == LEVEL(2))
+                            inviteCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "MODE" && _clients[client_fd].getAuthLevel() == LEVEL(2))
+                            modeCmd(*this, _clients[this->_fds[i].fd], args);
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
                     int client = this->_fds[i].fd;
