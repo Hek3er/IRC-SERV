@@ -1,4 +1,6 @@
 #include "Client.hpp"
+#include "Server.hpp"
+#include <exception>
 
 Client::Client( ) {
     this->_fd = -1;
@@ -34,6 +36,10 @@ Client::Client( int fd, std::string nickname, std::string username, std::string 
 	this->_messageCompleted = true;
 }
 
+LEVEL Client::getAuthLevel( void ) const {
+	return this->_level;
+}
+
 std::string	Client::GetNickname( void ) const {
 	return (this->_nickname);
 }
@@ -66,6 +72,10 @@ void	Client::SetFd( int fd ) {
 	this->_fd = fd;
 }
 
+void Client::SetAuthLevel( int level ) {
+	this->_level = LEVEL(level);
+}
+
 void    Client::SwitchToRegistered( void ) {
     this->_registered = true;
 }
@@ -88,9 +98,9 @@ bool Client::CheckNickname( std::string nickname ) const {
 		return false;
 	}
 
-	if (nickname.find(' ') != std::string::npos || 
+	if (nickname.find(' ') != std::string::npos ||
 		nickname.find(',') != std::string::npos ||
-		nickname.find('*') != std::string::npos || 
+		nickname.find('*') != std::string::npos ||
 		nickname.find('?') != std::string::npos ||
 		nickname.find('!') != std::string::npos ||
 		nickname.find('@') != std::string::npos ||
@@ -141,4 +151,18 @@ std::string Client::GetBuffer( void ) {
     this->_messageCompleted = true;
     this->_buffer.clear();
     return tmp;
+}
+
+bool	passCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
+{
+	checkPassword(args[1]);
+	try {
+		if ( ((irc_srv.GetPassword()).size() != args[1].size()) )
+			throw std::runtime_error(
+				"password missmatched"
+			);
+	} catch (const std::exception& e) {
+		clt.SendMessage(ERR_PASSWDMISMATCH(clt.GetNickname()));
+		return false;
+	}
 }

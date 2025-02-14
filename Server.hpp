@@ -35,7 +35,7 @@ public:
 
 private:
 	std::string			_port; // the server port
-	int					_sockfd; 
+	int					_sockfd;
 	std::string			_password; // password to the server
 	// std::vector<Client> _clients;
 	static std::map<int, Client> _clients; // map that takes an int [fd] as a key and the value is the obj of the client with that fd
@@ -44,3 +44,5 @@ private:
 	//added by soufiane
 	std::vector<Channel> channels;
 };
+
+void    checkPassword(std::string& password);

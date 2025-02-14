@@ -29,7 +29,7 @@ std::string Server::GetPassword( void ) const {
 
 void Server::RunServer( void ) {
 	// ⚠️ Maybe i should throw exceptions when error?
-	
+
 	struct addrinfo hints, *res;
 
 	memset(&hints, 0, sizeof(hints));
@@ -50,6 +50,8 @@ void Server::RunServer( void ) {
 		return ;
 	}
 
+    setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, NULL, 1);
+
 	if (bind(this->_sockfd, res->ai_addr, res->ai_addrlen) == -1) {
 		std::cerr << "Coudn't bind the address" << std::endl;
 		return ;
@@ -64,24 +66,24 @@ void Server::RunServer( void ) {
         char ad[1024] = {0};
         gethostname(ad, sizeof(ad));
         std::cout << "Server Waiting for connections..." << ad << " " << this->_port << std::endl;
-                
+
         struct pollfd fd;
         memset(&fd, 0, sizeof(fd));
-        
+
         fd.fd = this->_sockfd;
         fd.events = POLLIN;
         this->_fds.push_back(fd);
-        
+
         while(1) {
-            int client_fd; 
-            
+            int client_fd;
+
            	// i should change the params in accept (rn this is just a test)
-            
+
             int ret = poll(this->_fds.data(), this->_fds.size(), 1000);
             if (ret == -1) {
                 std::cerr << "error in poll" << std::endl;
             }
-            
+
             for (int i = 0; i < this->_fds.size(); i++) {
                 if (this->_fds[i].revents & POLLIN) {
                     if (this->_fds[i].fd == this->_sockfd) {
@@ -99,8 +101,9 @@ void Server::RunServer( void ) {
 
                         Client cl(client_fd);
                         this->_clients[client_fd] = cl;
+                        _clients[client_fd].SetAuthLevel(0);
                         std::cout << "Clientfd == " << client_fd << std::endl;
-
+                        std::cout << "Password : " << this->GetPassword() << std::endl;
                         SendMessage(client_fd, WELCOME_REPLY(_clients[client_fd].GetNickname(), std::string(ad)));
                     } else {
                         char buff[1024] = {0};
@@ -108,9 +111,9 @@ void Server::RunServer( void ) {
                         if (res < 0) {
                             std::cerr << __FILE__ << " : " <<  __LINE__ << " coudn't read from recv" << std::endl;
                         }
-                        
+
                         this->_clients[this->_fds[i].fd].StoreBuffer(buff, res);
-                        
+
                         // std::cout << "read : " << res << " from buffer: " << buff << std::endl;
 
                         std::string test(buff);
@@ -129,11 +132,12 @@ void Server::RunServer( void ) {
                             continue;
                         } else if (res <0) {
                             std::cerr << "Coudn't receive message" << std::endl;
-                        } else {
-                            if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
-                                std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << this->_clients[this->_fds[i].fd].GetBuffer();
-                            }
                         }
+                        // else {
+                        //     if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
+                        //         std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << this->_clients[this->_fds[i].fd].GetBuffer();
+                        //     }
+                        // }
                         // if (test.length() > 4 && test.substr(0,4).compare("JOIN ")) {
                         //     std::string command = test.substr(5);  // Get everything after "JOIN "
                         //     size_t newline_pos = command.find_first_of("\r\n");
@@ -143,12 +147,18 @@ void Server::RunServer( void ) {
                         //     joinCmd(*this, _clients[this->_fds[i].fd], command);
                         //     //joinCmd(*this, _clients[this->_fds[i].fd], test.substr(5));
                         // }
-                        if (args[0] == "JOIN")
-                            joinCmd(*this, _clients[this->_fds[i].fd], args);
-                        if (args[0] == "INVITE")
-                            inviteCmd(*this, _clients[this->_fds[i].fd], args);
-                        if (args[0] == "MODE")
-                            modeCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (_clients[client_fd].getAuthLevel() == 0 )
+                        {
+                            if (args[0] == "PASS")
+                                passCmd(*this, _clients[this->_fds[i].fd], args);
+                        } else {
+                            if (args[0] == "JOIN")
+                                joinCmd(*this, _clients[this->_fds[i].fd], args);
+                            if (args[0] == "INVITE")
+                                inviteCmd(*this, _clients[this->_fds[i].fd], args);
+                            if (args[0] == "MODE")
+                                modeCmd(*this, _clients[this->_fds[i].fd], args);
+                        }
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
                     int client = this->_fds[i].fd;
@@ -165,11 +175,11 @@ void Server::RunServer( void ) {
             }
         }
     // }
-     
+
     	/*
     	 * The idea rn is to get the information of the client the nickname then assign it to a client in the map
     	 * since the map has a key of nickname we need to retrive the nickname and the information first;
-    	 * 
+    	 *
     	 * This is used so we can have instante lookup times when we need to make direct messages
     	*/
 	}
