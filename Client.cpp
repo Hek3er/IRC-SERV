@@ -319,8 +319,8 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			clt.SetAuthLevel(2);
 		else
 			clt.SetAuthLevel(3);
-		std::cout << boldGreen("USER: ") << std::endl;
-		// std::cout << boldGreen("USER: ") << clt.GetUsername() << " 0 * " << clt.getRealName() << std::endl;
+		std::cout << boldGreen("USER: ") << clt.GetUsername() << " 0 * " << clt.getRealName() << std::endl;
+		irc_srv.SendMessage(clt.GetFd(), WELCOME_REPLY(clt.GetNickname(), std::string("ad")));
 		return true;
 	} catch (const std::exception& e) {
 		clt.SendMessage(e.what());

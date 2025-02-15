@@ -32,9 +32,9 @@ std::vector<struct pollfd>& Server::getClientsFds( void ) {
 
 void    Server::broadcastNick(std::string nickReply) {
 	std::vector<struct pollfd> &fds = this->getClientsFds();
-    for (std::vector<struct pollfd>::const_iterator it = fds.begin() ; it != fds.end(); ++it) {
+    for (std::vector<struct pollfd>::const_iterator it = fds.begin() + 1 ; it != fds.end(); ++it) {
         int fd = it->fd;
-        this->SendMessageProto(fd, nickReply);
+        this->SendMessage(fd, nickReply);
     }
 }
 
@@ -116,7 +116,7 @@ void Server::RunServer( void ) {
                         _clients[client_fd].SetAuthLevel(0);
                         // std::cout << "Clientfd == " << client_fd << std::endl;
                         // std::cout << "Password : " << this->GetPassword() << std::endl;
-                        SendMessage(client_fd, WELCOME_REPLY(_clients[client_fd].GetNickname(), std::string(ad)));
+                        // SendMessage(client_fd, WELCOME_REPLY(_clients[client_fd].GetNickname(), std::string(ad)));
                     } else {
                         char buff[1024] = {0};
                         int res = recv(this->_fds[i].fd, buff, 1023, 0);
