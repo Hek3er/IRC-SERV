@@ -113,14 +113,14 @@ void Server::RunServer( void ) {
                         
                         // std::cout << "read : " << res << " from buffer: " << buff << std::endl;
 
-                        std::string test(buff);
+                        // std::string test(buff);
                         // for (int i = 0; i < test.length() + 1; i++) {
                         //     std::cout << test[i] << " = " << (int)(test[i]) << std::endl;
                         // }
-                        std::vector<std::string> args = split(test, ' ');
-                        if (test == "hello\n") {
-                            this->_clients[this->_fds[i].fd].SendMessage("welcome to the server\n");
-                        }
+                        
+                        // if (test == "hello\n") {
+                        //     this->_clients[this->_fds[i].fd].SendMessage("welcome to the server\n");
+                        // }
 
                         if (res == 0) {
                             std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
@@ -131,8 +131,17 @@ void Server::RunServer( void ) {
                             std::cerr << "Coudn't receive message" << std::endl;
                         } else {
                             if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
-                                std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << this->_clients[this->_fds[i].fd].GetBuffer();
-                            }
+                                std::string buffer(this->_clients[this->_fds[i].fd].GetBuffer());
+                                std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << buffer;
+                                
+                                std::vector<std::string> args = split(buffer, ' ');
+                                if (args[0] == "JOIN")
+                                    joinCmd(*this, _clients[this->_fds[i].fd], args);
+                                if (args[0] == "INVITE")
+                                    inviteCmd(*this, _clients[this->_fds[i].fd], args);
+                                if (args[0] == "MODE")
+                                    modeCmd(*this, _clients[this->_fds[i].fd], args);
+                                
                         }
                         // if (test.length() > 4 && test.substr(0,4).compare("JOIN ")) {
                         //     std::string command = test.substr(5);  // Get everything after "JOIN "
@@ -143,12 +152,8 @@ void Server::RunServer( void ) {
                         //     joinCmd(*this, _clients[this->_fds[i].fd], command);
                         //     //joinCmd(*this, _clients[this->_fds[i].fd], test.substr(5));
                         // }
-                        if (args[0] == "JOIN")
-                            joinCmd(*this, _clients[this->_fds[i].fd], args);
-                        if (args[0] == "INVITE")
-                            inviteCmd(*this, _clients[this->_fds[i].fd], args);
-                        if (args[0] == "MODE")
-                            modeCmd(*this, _clients[this->_fds[i].fd], args);
+                        }
+                        
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
                     int client = this->_fds[i].fd;

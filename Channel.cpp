@@ -184,9 +184,7 @@ std::vector<std::string> split(std::string str, char del) {
     
     for(int i = 0; i < str.length(); i++) {
         if(str[i] != del) {
-            if(str[i] != '\r' && str[i] != '\n') {
-                temp += str[i];
-            }
+            temp += str[i];
         }
         else if(!temp.empty()) {
             result.push_back(temp);

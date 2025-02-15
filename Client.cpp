@@ -5,7 +5,7 @@ Client::Client( ) {
     this->_registered = false;
 	this->_nickname = "guest";
 	this->_username = "guestuser";
-	this->_messageCompleted = true;
+	this->_messageCompleted = false;
 }
 
 Client::Client( int fd ) {
@@ -13,7 +13,7 @@ Client::Client( int fd ) {
 	this->_username = "guestuser";
     this->_fd = fd;
     this->_registered = false;
-    this->_messageCompleted = true;
+    this->_messageCompleted = false;
 }
 
 Client::Client( int fd, std::string address ) {
@@ -22,7 +22,7 @@ Client::Client( int fd, std::string address ) {
 	this->_username = "guestuser";
     this->_address = address;
     this->_registered = false;
-    this->_messageCompleted = true;
+    this->_messageCompleted = false;
 }
 
 Client::Client( int fd, std::string nickname, std::string username, std::string address ) {
@@ -31,7 +31,7 @@ Client::Client( int fd, std::string nickname, std::string username, std::string 
 	this->_username = username;
 	this->_address = address;
 	this->_registered = false;
-	this->_messageCompleted = true;
+	this->_messageCompleted = false;
 }
 
 std::string	Client::GetNickname( void ) const {
@@ -122,8 +122,10 @@ void Client::SendMessage( const std::string& msg ) const {
 }
 
 void Client::StoreBuffer( char *str, int size ) {
-    if (str == NULL || size == 0)
-        return ;
+    if (str == NULL || size == 0 || str[0] == '\n' || str[0] == '\r') {
+		this->_messageCompleted = false;
+	    return ;
+	}
     this->_buffer += std::string(str);
     if (str[size - 1] != '\n') {
         this->_messageCompleted = false;
