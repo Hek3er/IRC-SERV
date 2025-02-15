@@ -37,7 +37,6 @@ class Client {
 		void	SetFd( int fd );
 		void	SetAuthLevel( int level );
 
-		bool	CheckNickname( std::string nickname ) const;
 		void	SendMessage( const std::string& msg ) const;
 		void	QueueMessage(const std::string& msg);
 		std::string GetNextMessage( void );
@@ -60,3 +59,4 @@ class Client {
 };
 
 bool	passCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
+bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args);

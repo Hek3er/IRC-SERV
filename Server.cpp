@@ -149,6 +149,8 @@ void Server::RunServer( void ) {
                         // }
                         if (args[0] == "PASS")
                             passCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "NICK"&& _clients[client_fd].getAuthLevel() == LEVEL(1))
+                            nickCmd(*this, _clients[this->_fds[i].fd], this->_clients, args);
                         if (args[0] == "JOIN" && _clients[client_fd].getAuthLevel() == LEVEL(2))
                             joinCmd(*this, _clients[this->_fds[i].fd], args);
                         if (args[0] == "INVITE" && _clients[client_fd].getAuthLevel() == LEVEL(2))

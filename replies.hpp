@@ -22,5 +22,12 @@
 #define RPL_INVITING(client, nick, channel) "341" + client + " " + nick + " " + channel
 
 // PASS
-#define ERR_ALREADYREGISTERED(client) "462" + client + " :You may not reregister\r\n"
-#define ERR_PASSWDMISMATCH(client) "464" + client + " :Password incorrect\r\n"
+#define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister\r\n"
+#define ERR_PASSWDMISMATCH(client) "464 " + client + " :Password incorrect\r\n"
+
+// NICK
+
+#define ERR_ERRONEUSNICKNAME(client, nick) "432 " + client + " " + nick + " :Erroneus nickname\r\n"
+#define ERR_NONICKNAMEGIVEN(client) "431 " + client + " :No nickname given\r\n"
+#define ERR_NICKNAMEINUSE(client, nick) "433 " + client + " " + nick + " :Nickname is already in use\r\n"
+#define ERR_NICKCOLLISION(client, nick) "436 " + client + " " + nick + " :Nickname collision KILL from <user>@<host>\r\n"
