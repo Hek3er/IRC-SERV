@@ -63,6 +63,7 @@ void Server::RunServer( void ) {
 	for (;;) {
         char ad[1024] = {0};
         gethostname(ad, sizeof(ad));
+        hostName = std::string(ad);
         std::cout << "Server Waiting for connections..." << ad << " " << this->_port << std::endl;
                 
         struct pollfd fd;
@@ -149,6 +150,8 @@ void Server::RunServer( void ) {
                             inviteCmd(*this, _clients[this->_fds[i].fd], args);
                         if (args[0] == "MODE")
                             modeCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "TOPIC")
+                            topic_cmd(*this, _clients[this->_fds[i].fd], args);
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
                     int client = this->_fds[i].fd;
@@ -220,4 +223,11 @@ Client*	Server::getClientByNick(std::string nick) {
         }
     }
     return NULL;
+}
+
+std::string Server::getHostName() {
+    return hostName;
+}
+void	Server::setHostName(std::string name) {
+    hostName = name;
 }

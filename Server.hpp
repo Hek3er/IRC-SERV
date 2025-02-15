@@ -32,8 +32,11 @@ public:
 	Channel* getChannel(std::string channelName);
 	Client*	getClientByNick(std::string nick);
 	Client& getClient(int fd);
+	std::string getHostName();
+	void	setHostName(std::string name);
 
 private:
+	std::string			hostName;
 	std::string			_port; // the server port
 	int					_sockfd; 
 	std::string			_password; // password to the server

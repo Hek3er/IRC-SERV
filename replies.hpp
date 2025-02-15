@@ -9,11 +9,14 @@
 
 #define MODE_CHANGE_REPLY(nick, user, host, channel, cmd, parameter) ":" + nick + "!" + user + "@" + host + " MODE " + channel + " " + cmd + parameter + "\r\n"
 
+#define TOPIC_CHANGE(nick, user, host, channel, newTopic)  ":" + nick + "!" + user + "@" + host + " TOPIC " + channel + " :" + newTopic + "\r\n"
 
 #define RPL_CHANNELMODEIS(client, channel,modestirng, modes_arguments) "324 " + client + " " + channel + " " + modestirng + " " + modes_arguments + "\r\n"
 
 //ERRORS
-
+#define RPL_NOTOPIC(client, channel) "331 " + client + " " + channel + " :No topic is set\r\n"
+#define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + "\r\n"
+#define RPL_TOPICWHOTIME(client, channel, clientChanger, usernameChanger, servername) "333 " + client + " " + channel + " " + clientChanger + "!~" + usernameChanger + "@" + servername + "\r\n"
 #define ERR_NOSUCHNICK(client , nick) "401" + client + " " + nick + ":No such nick\r\n"
 #define ERR_NOSUCHCHANNEL(client, channel) "403 " + client + " " + channel + " :" + "No such channel\r\n"
 #define ERR_NOTONCHANNEL(client, channel) "442" + client + " " + channel + " :You're not on that channel\r\n"

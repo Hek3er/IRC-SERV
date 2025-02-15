@@ -1,8 +1,8 @@
 NAME = ircserv
 CC = c++
-CFLAGS = -std=c++98 #-fsanitize=address -g3 #-Wall -Werror -Wextra
+CFLAGS = -std=c++98 -fsanitize=address # -g3 #-Wall -Werror -Wextra
 
-SRC = Client.cpp Server.cpp main.cpp Channel.cpp join.cpp mode.cpp invite.cpp
+SRC = Client.cpp Server.cpp main.cpp Channel.cpp join.cpp mode.cpp invite.cpp topic.cpp
 HEADERS = Client.hpp Server.hpp Channel.hpp
 
 OSRC = $(SRC:.cpp=.o)

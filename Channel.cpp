@@ -142,6 +142,9 @@ size_t Channel::getLimit() {
 size_t Channel::getUserNum() {
     return clients_fd.size();
 }
+int Channel::getTopicChanger() {
+    return topic_changer;
+}
 
 void    Channel::setInvite(bool condition) {
     invite_only = condition;
@@ -169,6 +172,9 @@ void Channel::setTopic(std::string newTopic) {
     topic = newTopic;
 }
 
+void   Channel::setTopicChanger(int fd) {
+    topic_changer = fd;
+}
 
 bool Channel::isInviteOnly() {
     return invite_only;
@@ -208,6 +214,13 @@ void    Channel::brodcastMode(Server& server, std::string modeReply) {
     for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
         int fd = *it;
         server.SendMessage(fd, modeReply);
+    }
+}
+
+void    Channel::brodcastTopic(Server& server, std::string TopicReply) {
+    for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
+        int fd = *it;
+        server.SendMessage(fd, TopicReply);
     }
 }
 

@@ -5,6 +5,7 @@
 #include <vector>
 
 //TODO handel relpies and brodcast for each cmd and execute the mods
+//Test +o -o operator
 
 
 bool isMode(char c) {
@@ -55,7 +56,18 @@ void    printargs(std::vector<std::pair<std::string, std::string> >& mode_par_in
     }
 }
 
+bool    checkForParameter(std::string &parameter, std::string& mode) {
+    if ((mode == "+k" || mode == "+o" || mode == "-o" || mode == "+l") && parameter.empty())
+        return false;
+    return true;
+}
+
 bool executeModes(Server& ss,Channel& ch, Client& clt, std::string &parameter, std::string& mode) {
+    if (!checkForParameter(parameter, mode)) {
+        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "MODE"));
+        return false;
+    }
+
     if (mode == "+i" || mode == "-i") {
         (mode[0] == '+') ? ch.setInvite(true) : ch.setInvite(false);
         return (true);
@@ -119,14 +131,14 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     Channel* working_ch;
     Client* target_clt;
 
+    if (args.size() == 1) {
+        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "MODE"));
+        return ;
+    }
     working_ch = ss.getChannel(args[1]);
     if (!working_ch) {
         clt.SendMessage(ERR_NOSUCHCHANNEL(clt.GetUsername(), args[1]));
         return; //ERR_NOSUCHCHANNEL 
-    }
-    if (args.size() == 1) {
-        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "MODE"));
-        return ;
     }
     if (args.size() == 2) {
         clt.SendMessage(RPL_CHANNELMODEIS(clt.GetNickname(), working_ch->getName(), working_ch->getModes().first, working_ch->getModes().second));
