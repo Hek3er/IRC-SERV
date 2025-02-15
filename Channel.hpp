@@ -43,15 +43,15 @@ class Channel {
         //bool downgradeOp(Client& clt);
         // bool isOp(Client& clt);
 
-        // bool    setKey(std::string nickname, std::string _key);
-        // bool    setTopic(std::string nickname, std::string _topic);
-        // bool    setLimit(std::string nickname, size_t _limit);
         void    setInvite(bool condition);
         void    setTopicRestriction(bool condition);
         void    setLimitCondition(bool condition);
         void    setlimit(size_t n);
+        void    setKey(std::string key);
+        void    removeKey();
         void    setTopic(std::string newTopic);
         
+        std::pair<std::string, std::string> getModes();
         std::string getName();
         std::string getTopic();
         std::string getKey();

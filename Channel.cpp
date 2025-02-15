@@ -6,26 +6,23 @@ Channel::Channel() {}
 Channel::Channel(std::string channel_name) : name(channel_name) {
     topic = "";
     key = "";
-    limit = std::string::npos;
+    limit = 0;
+    user_limit = false;
     invite_only = false;
     topic_res = false;
     is_Key_Protected = false;
+    key = "";
 }
 
 Channel::Channel(std::string channel_name, std::string channel_key)
     : name(channel_name) {
     topic = "";
-    limit = std::string::npos;
+    limit = 0;
+    user_limit = false;
     invite_only = false;
     topic_res = false;
-    if (!channel_key.empty()) {
-        is_Key_Protected = true;
-        key = channel_key;
-    }
-    else {
-        is_Key_Protected = false;
-        key = "";
-    }
+    is_Key_Protected = true;
+    key = channel_key;
     }
 
 Channel::Channel(const Channel& cpy) :
@@ -33,6 +30,7 @@ Channel::Channel(const Channel& cpy) :
     topic(cpy.topic),
     key(cpy.key),
     limit(cpy.limit),
+    user_limit(cpy.user_limit),
     invite_only(cpy.invite_only),
     topic_res(cpy.topic_res),
     is_Key_Protected(cpy.is_Key_Protected),
@@ -48,6 +46,7 @@ Channel& Channel::operator=(const Channel& other) {
         topic = other.topic;
         key = other.key;
         limit = other.limit;
+        user_limit = other.user_limit;
         invite_only = other.invite_only;
         topic_res = other.topic_res;
         is_Key_Protected = other.is_Key_Protected;
@@ -102,6 +101,31 @@ bool    Channel::isOp(int fd) {
 //     return (operators.find(nickname) != operators.end());
 // }
 
+std::pair<std::string, std::string> Channel::getModes() {
+    std::string modes = "+";
+    std::string args = "";
+    
+    if (is_Key_Protected) {
+        modes += "k";
+        args += "*";
+    }
+    if (invite_only) {
+        modes += "i";
+    }
+    if (topic_res) {
+        modes += "t";
+    }
+    if (user_limit) {
+        modes += "l";
+        if (!args.empty()) args += " ";
+        args += std::to_string(getLimit());
+    }
+    
+    if (modes == "+")
+        modes = "";
+        
+    return std::make_pair(modes, args);
+}
 
 std::string Channel::getName() {
     return name;
@@ -132,6 +156,15 @@ void    Channel::setLimitCondition(bool condition) {
 void Channel::setlimit(size_t n) {
     limit = n;
 }
+
+void    Channel::setKey(std::string key) {
+    this->key = key;
+    this->is_Key_Protected = true;
+}
+void    Channel::removeKey() {
+    this->is_Key_Protected = false;
+}
+
 void Channel::setTopic(std::string newTopic) {
     topic = newTopic;
 }

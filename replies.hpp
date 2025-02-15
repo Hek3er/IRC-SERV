@@ -7,7 +7,11 @@
 
 #define INVITE_REPLY(client, invited_user, ipadress, nickname, channel) ":" + client + "!" + invited_user + "@" + ipadress + " INVITE " + nickname + " " + channel + "\r\n"
 
-#define MODE_CHANGE_REPLY(nick, user, host, channel, cmd) ":" + nick + "!" + username + "@" + host + " MODE " + channel + " " + cmd + "\r\n"
+#define MODE_CHANGE_REPLY(nick, user, host, channel, cmd, parameter) ":" + nick + "!" + user + "@" + host + " MODE " + channel + " " + cmd + parameter + "\r\n"
+
+
+#define RPL_CHANNELMODEIS(client, channel,modestirng, modes_arguments) "324 " + client + " " + channel + " " + modestirng + " " + modes_arguments + "\r\n"
+
 //ERRORS
 
 #define ERR_NOSUCHNICK(client , nick) "401" + client + " " + nick + ":No such nick\r\n"
@@ -15,8 +19,11 @@
 #define ERR_NOTONCHANNEL(client, channel) "442" + client + " " + channel + " :You're not on that channel\r\n"
 #define ERR_USERONCHANNEL(client, nickname, channel) "443" + client + " " + nickname + " " + channel + " :is already on channel\r\n"
 #define ERR_NEEDMOREPARAMS(client, cmd) "461 " + client + " " + cmd + " :" + "Not enough parameters\r\n"
+#define ERR_UNKNOWNMODE(client, modechar) "472" + client + " " + modechar + ":" + "is an unknown mode character to me\r\n"
 #define ERR_INVITEONLYCHAN(client, channel) "473 " + client + " " + channel + " :" + "Cannot join channel (+i)\r\n"
 #define ERR_CHANNELISFULL(client, channel) "471 " + client + " " + channel + " :" + "Cannot join channel (+l)\r\n"
 #define ERR_BADCHANNELKEY(client, channel) "475 " + client + " " + channel + " :" + "Cannot join channel (+k)\r\n"
 #define ERR_CHANOPRIVSNEEDED(client, channel) "482" + client + " " + channel + ":You're not channel operator\r\n"
 #define RPL_INVITING(client, nick, channel) "341" + client + " " + nick + " " + channel
+
+#define ERR_INVALIDMODEPARAM(client, channel, mode, parameter) "696 " + client + " " + channel + " " + mode + " " + parameter + ":Invalid mode parameter\r\n"
