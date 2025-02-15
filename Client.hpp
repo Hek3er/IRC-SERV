@@ -8,7 +8,8 @@
 enum LEVEL {
 	ZERO,
 	ONE,
-	TWO
+	TWO,
+	THREE
 };
 
 class Server;
@@ -26,6 +27,7 @@ class Client {
 		std::string GetAddress( void ) const;
 		int			GetFd( void ) const;
 		LEVEL		getAuthLevel( void ) const;
+		std::string getRealName( void ) const;
 
 		void   SwitchToRegistered( void );
 		bool   IsRegistered( void ) const;
@@ -33,6 +35,7 @@ class Client {
 		//Setters
 		void	SetNickname( std::string nickname );
 		void	SetUsername( std::string username );
+		void	SetRealname( std::string realname );
 		void	SetAddress( std::string address );
 		void	SetFd( int fd );
 		void	SetAuthLevel( int level );
@@ -52,6 +55,7 @@ class Client {
 		int			_fd;
 		std::string _nickname;
 		std::string _username;
+		std::string _realname;
 		std::string	_address;
 		std::queue<std::string> _messages;
 		std::string _buffer;
@@ -60,3 +64,4 @@ class Client {
 
 bool	passCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
 bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args);
+bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);

@@ -26,6 +26,18 @@ std::string Server::GetPassword( void ) const {
 	return (this->_password);
 }
 
+std::vector<struct pollfd>& Server::getClientsFds( void ) {
+    return (this->_fds);
+}
+
+void    Server::broadcastNick(std::string nickReply) {
+	std::vector<struct pollfd> &fds = this->getClientsFds();
+    for (std::vector<struct pollfd>::const_iterator it = fds.begin() ; it != fds.end(); ++it) {
+        int fd = it->fd;
+        this->SendMessageProto(fd, nickReply);
+    }
+}
+
 
 void Server::RunServer( void ) {
 	// ⚠️ Maybe i should throw exceptions when error?
@@ -102,8 +114,8 @@ void Server::RunServer( void ) {
                         Client cl(client_fd);
                         this->_clients[client_fd] = cl;
                         _clients[client_fd].SetAuthLevel(0);
-                        std::cout << "Clientfd == " << client_fd << std::endl;
-                        std::cout << "Password : " << this->GetPassword() << std::endl;
+                        // std::cout << "Clientfd == " << client_fd << std::endl;
+                        // std::cout << "Password : " << this->GetPassword() << std::endl;
                         SendMessage(client_fd, WELCOME_REPLY(_clients[client_fd].GetNickname(), std::string(ad)));
                     } else {
                         char buff[1024] = {0};
@@ -149,13 +161,15 @@ void Server::RunServer( void ) {
                         // }
                         if (args[0] == "PASS")
                             passCmd(*this, _clients[this->_fds[i].fd], args);
-                        if (args[0] == "NICK"&& _clients[client_fd].getAuthLevel() == LEVEL(1))
+                        if (args[0] == "NICK" && _clients[client_fd].getAuthLevel() >= LEVEL(1))
                             nickCmd(*this, _clients[this->_fds[i].fd], this->_clients, args);
-                        if (args[0] == "JOIN" && _clients[client_fd].getAuthLevel() == LEVEL(2))
+                        if (args[0] == "USER" && _clients[client_fd].getAuthLevel() >= LEVEL(2))
+                            userCmd(*this, _clients[this->_fds[i].fd], args);
+                        if (args[0] == "JOIN" && _clients[client_fd].getAuthLevel() == LEVEL(3))
                             joinCmd(*this, _clients[this->_fds[i].fd], args);
-                        if (args[0] == "INVITE" && _clients[client_fd].getAuthLevel() == LEVEL(2))
+                        if (args[0] == "INVITE" && _clients[client_fd].getAuthLevel() == LEVEL(3))
                             inviteCmd(*this, _clients[this->_fds[i].fd], args);
-                        if (args[0] == "MODE" && _clients[client_fd].getAuthLevel() == LEVEL(2))
+                        if (args[0] == "MODE" && _clients[client_fd].getAuthLevel() == LEVEL(3))
                             modeCmd(*this, _clients[this->_fds[i].fd], args);
                     }
                 } else if (this->_fds[i].revents & POLLOUT) {
