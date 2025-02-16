@@ -15,6 +15,7 @@ class Channel {
         std::string name;
         std::string topic;
         std::string key;
+        int topic_changer;
         size_t      limit;
         bool        user_limit;
         bool        invite_only;
@@ -43,20 +44,22 @@ class Channel {
         //bool downgradeOp(Client& clt);
         // bool isOp(Client& clt);
 
-        // bool    setKey(std::string nickname, std::string _key);
-        // bool    setTopic(std::string nickname, std::string _topic);
-        // bool    setLimit(std::string nickname, size_t _limit);
         void    setInvite(bool condition);
         void    setTopicRestriction(bool condition);
         void    setLimitCondition(bool condition);
         void    setlimit(size_t n);
+        void    setKey(std::string key);
+        void    removeKey();
         void    setTopic(std::string newTopic);
+        void    setTopicChanger(int fd);
         
+        std::pair<std::string, std::string> getModes();
         std::string getName();
         std::string getTopic();
         std::string getKey();
         size_t  getLimit();
         size_t  getUserNum();
+        int getTopicChanger();
 
         bool isInviteOnly();
         bool isKeyProtected();
@@ -69,6 +72,7 @@ class Channel {
 
         void broadcastJoin(Server& server, int joiner_fd);
         void brodcastMode(Server& server, std::string reply);
+        void brodcastTopic(Server& server, std::string TopicReply);
 
 
 };
@@ -76,5 +80,6 @@ class Channel {
 bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
 void    inviteCmd(Server& server,Client& clt, std::vector<std::string> args);
 void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args);
+void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args);
 bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args);
 std::vector<std::string> split(std::string str, char del);
