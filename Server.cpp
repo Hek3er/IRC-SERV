@@ -77,6 +77,7 @@ void Server::RunServer( void ) {
 	for (;;) {
         char ad[1024] = {0};
         gethostname(ad, sizeof(ad));
+        hostName = std::string(ad);
         std::cout << "Server Waiting for connections..." << ad << " " << this->_port << std::endl;
 
         struct pollfd fd;
@@ -162,6 +163,8 @@ void Server::RunServer( void ) {
                                     inviteCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "MODE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     modeCmd(*this, _clients[this->_fds[i].fd], args);
+                                if (args[0] == "TOPIC" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                    topic_cmd(*this, _clients[this->_fds[i].fd], args);
                                 
                         }
                         // else {
@@ -251,4 +254,11 @@ Client*	Server::getClientByNick(std::string nick) {
         }
     }
     return NULL;
+}
+
+std::string Server::getHostName() {
+    return hostName;
+}
+void	Server::setHostName(std::string name) {
+    hostName = name;
 }

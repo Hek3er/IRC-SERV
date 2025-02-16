@@ -45,8 +45,10 @@ bool    invite(Server& irc_srv, Client& clt, std::string nickname, std::string c
 }
 
 void    inviteCmd(Server& server,Client& clt, std::vector<std::string> args) {
-    if (args.size() < 3)
-        return ;
+    if (args.size() < 3) {
+        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "INVITE"));
+            return;
+    }
     std::string nickname = args[1];
     std::string ch_name = args[2];
 

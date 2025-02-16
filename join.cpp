@@ -46,11 +46,13 @@ bool    joinChannel(Server& ss, const std::string& channel, const std::string& k
         targetCH.broadcastJoin(ss, clt.GetFd());
     }
     else {
-        Channel new_ch(channel, key);
+        Channel new_ch(channel);
+        if (!key.empty())
+            new_ch.setKey(key);
         new_ch.addMember(clt.GetFd());
         new_ch.addOp(clt.GetFd());
         ch_list.push_back(new_ch);
-        new_ch.broadcastJoin(ss, clt.GetFd());
+        ch_list.back().broadcastJoin(ss, clt.GetFd());
     }
     return true;
     
@@ -66,16 +68,11 @@ bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args) {
     }
     
     channels = split(args[1], ','); 
-    keys = split(args[2], ',');
- 
-
+    if (args.size() > 2 && !args[2].empty())
+        keys = split(args[2], ',');
     for (int i = 0; i < channels.size(); i++) {
         std::string channel_key = (i < keys.size()) ? keys[i] : "";
-        std::cout<<channels[i]<<"\n";
-        if(joinChannel(irc_srv, channels[i], channel_key, clt))
-            std::cout<<"JOIN SUCCESSFULY!!\n";
-        else 
-            std::cout<<"ERROR\n";
+        joinChannel(irc_srv, channels[i], channel_key, clt);
     }
     std::cout<<"done!\n";
     return true;     
