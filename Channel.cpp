@@ -196,13 +196,13 @@ bool Channel::isUserWelcomed(int fd) {
 
 void Channel::broadcastJoin(Server& server, int joiner_fd) {
     const Client& joiner = server.getClient(joiner_fd);
-    std::string joinreply = JOIN_REPLY(joiner.GetNickname(), joiner.GetUsername(), this->name, joiner.GetAddress());
-    std::string list = ":servername 353 " + joiner.GetNickname() + " = " + this->getName() + " :";
+    std::string joinreply = JOIN_REPLY(joiner.GetNickname(), joiner.GetUsername(), this->name, server.getHostName());
+    std::string list = ":" + server.getHostName() + " 353 " + joiner.GetNickname() + " = " + this->getName() + " :";
     for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
         list += server.getClient(*it).GetNickname();
         list += " ";
     }
-    list += "\r\n:servername 366 " + joiner.GetNickname() + " " + this->getName() + " :End of /NAMES list\r\n";
+    list += "\r\n:" + server.getHostName() + " 366 " + joiner.GetNickname() + " " + this->getName() + " :End of NAMES list\r\n";
     for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
         int fd = *it;
         server.SendMessage(fd, joinreply);

@@ -11,9 +11,10 @@ std::string    getTopic(std::vector<std::string> args) {
             topic += args[i];
             if (topic[0] != ':')
                 return (topic);
+            topic += " ";
         }
     }
-    if (topic == ":")
+    if (topic == ": ")
         topic = "";
     if (topic[0] == ':')
         topic = topic.substr(1); // ADD SPACE !
@@ -35,13 +36,13 @@ void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
             clt.SendMessage(ERR_NOSUCHCHANNEL(clt.GetUsername(), args[1]));
             return ;
         }
-    }
-    
-    if (args.size() == 2) {
         if (!working_ch->isMember(clt.GetFd())) {
             clt.SendMessage(ERR_NOTONCHANNEL(clt.GetNickname(), working_ch->getName()));
             return;// ERR_NOTONCHANNEL
         }
+    }
+    
+    if (args.size() == 2) {
         if (working_ch->getTopic().empty()) {
             clt.SendMessage(RPL_NOTOPIC(clt.GetNickname(), working_ch->getName()));//RPL_NOTOPIC
             return;
@@ -63,6 +64,7 @@ void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
         working_ch->setTopicChanger(clt.GetFd());
         std::string topic = getTopic(args);
         working_ch->setTopic(topic);
+        working_ch->brodcastTopic(ss, TOPIC_CHANGE(clt.GetNickname(), clt.GetUsername(), ss.getHostName(), working_ch->getName(), topic));
         // if (args.size() == 3 && args[2] == ":") {
         //     working_ch->setTopic("");
         //     working_ch->brodcastTopic(ss, TOPIC_CHANGE(clt.GetNickname(), clt.GetUsername(), ss.getHostName(), working_ch->getName(), ""));
