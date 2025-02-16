@@ -123,7 +123,13 @@ void Client::StoreBuffer( char *str, int size ) {
 		this->_messageCompleted = false;
 	    return ;
 	}
-    this->_buffer += std::string(str);
+
+	for (int i = 0; i < size; i++) {
+		if (str[i] != 4) {
+			this->_buffer += str[i];
+		}
+	}
+
     if (str[size - 1] != '\n') {
         this->_messageCompleted = false;
     } else {
