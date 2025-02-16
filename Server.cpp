@@ -152,15 +152,15 @@ void Server::RunServer( void ) {
                                 std::vector<std::string> args = split(buffer, ' ');
                                 if (args[0] == "PASS")
                                     passCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "NICK" && _clients[client_fd].getAuthLevel() >= LEVEL(1))
+                                if (args[0] == "NICK" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
                                     nickCmd(*this, _clients[this->_fds[i].fd], this->_clients, args);
-                                if (args[0] == "USER" && _clients[client_fd].getAuthLevel() >= LEVEL(2))
+                                if (args[0] == "USER" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(2))
                                     userCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "JOIN" && _clients[client_fd].getAuthLevel() == LEVEL(3))
+                                if (args[0] == "JOIN" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     joinCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "INVITE" && _clients[client_fd].getAuthLevel() == LEVEL(3))
+                                if (args[0] == "INVITE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     inviteCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "MODE" && _clients[client_fd].getAuthLevel() == LEVEL(3))
+                                if (args[0] == "MODE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     modeCmd(*this, _clients[this->_fds[i].fd], args);
                                 
                         }
