@@ -162,6 +162,8 @@ void Server::RunServer( void ) {
                                     inviteCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "MODE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     modeCmd(*this, _clients[this->_fds[i].fd], args);
+                                if (args[0] == "PRIVMSG" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                    privmsg(*this, _clients[this->_fds[i].fd], this->_clients, args);
                                 
                         }
                         // else {

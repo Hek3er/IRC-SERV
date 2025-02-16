@@ -65,3 +65,6 @@ class Client {
 bool	passCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
 bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args);
 bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
+
+// utils
+// bool findNickNameMatch(std::string &param, std::map<int, Client> &clients)

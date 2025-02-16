@@ -10,7 +10,7 @@
 #define MODE_CHANGE_REPLY(nick, user, host, channel, cmd) ":" + nick + "!" + username + "@" + host + " MODE " + channel + " " + cmd + "\r\n"
 //ERRORS
 
-#define ERR_NOSUCHNICK(client , nick) "401" + client + " " + nick + ":No such nick\r\n"
+#define ERR_NOSUCHNICK(client , nick) "401" + client + " " + nick + " :No such nick\r\n"
 #define ERR_NOSUCHCHANNEL(client, channel) "403 " + client + " " + channel + " :" + "No such channel\r\n"
 #define ERR_NOTONCHANNEL(client, channel) "442" + client + " " + channel + " :You're not on that channel\r\n"
 #define ERR_USERONCHANNEL(client, nickname, channel) "443" + client + " " + nickname + " " + channel + " :is already on channel\r\n"
@@ -31,3 +31,9 @@
 #define ERR_NONICKNAMEGIVEN(client) "431 " + client + " :No nickname given\r\n"
 #define ERR_NICKNAMEINUSE(client, nick) "433 " + client + " " + nick + " :Nickname is already in use\r\n"
 #define ERR_NICKCOLLISION(client, nick) "436 " + client + " " + nick + " :Nickname collision KILL from <user>@<host>\r\n"
+
+//PRIVMSG
+#define ERR_CANNOTSENDTOCHAN(client, channel) "404 " + client + " " + channel + " :" + ":Cannot send to channel\r\n"
+#define ERR_NORECIPIENT(client, command) "411 " + client + " :" + ":No recipient given " + "(<" command + ">)" + "\r\n"
+#define ERR_NOTEXTTOSEND(client, command) "412 " + client + " :" + ":No text to send\r\n"
+

@@ -333,3 +333,89 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 		return false;
 	}
 }
+
+// PRIVMSG
+
+std::string concatMsg(std::vector<std::string>& args) {
+	std::string result;
+	std::vector<std::string>::const_iterator it;
+	for (it = args.begin() + 2; it != args.end(); it++)
+	{
+		if (it != args.begin() + 2)
+			result += " ";
+		result += *it;
+	}
+	return result.substr(1);
+}
+
+Client  getClientByNIck(std::string &nick, std::map<int, Client> &clients) {
+    std::map<int, Client>::const_iterator it;
+	for (it = clients.begin(); it != clients.end(); ++it)
+	{
+		if (it->second.GetNickname() == nick)
+			return it->second;
+	}
+	return it->second;
+}
+
+bool	isChannel(std::string channelName) {
+	if (channelName[0] == '#')
+		return true;
+	return false;
+}
+
+bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args) {
+	try {
+		if (args.size() == 1)
+			throw std::runtime_error(
+				ERR_NEEDMOREPARAMS(clt.GetNickname(), "PRIVMSG")
+			);
+        Client	recieverClient;
+		// valid nickname, no text
+        if (args.size() == 2 && !isChannel(args[1]) && !findNickNameMatch(args[1], clients))
+            throw std::runtime_error(
+                ERR_NOTEXTTOSEND(clt.GetNickname(), args[0])
+            );
+		// not a valide nickname and not a valid channel
+        if (args.size() >= 2 && !isChannel(args[1]) && findNickNameMatch(args[1], clients))
+			throw std::runtime_error(
+				ERR_NOSUCHNICK(clt.GetNickname(), args[1])
+			);
+		Channel *cltChannel = irc_srv.getChannel(args[1]) ;
+
+		// not a valid channel
+		if (isChannel(args[1]) && cltChannel == NULL)
+			throw std::runtime_error(
+                ERR_CANNOTSENDTOCHAN(clt.GetNickname(), args[1])
+            );
+		// valid channel but not a member
+		if (isChannel(args[1]) && cltChannel != NULL && !cltChannel->isMember(clt.GetFd()))
+			throw std::runtime_error(
+                ERR_CANNOTSENDTOCHAN(clt.GetNickname(), args[1])
+            );
+		// valid channel and member but no text
+		if (args.size() == 2 && isChannel(args[1]) && cltChannel != NULL && cltChannel->isMember(clt.GetFd()))
+			throw std::runtime_error(
+                ERR_NOTEXTTOSEND(clt.GetNickname(), args[0])
+            );
+
+		if (!isChannel(args[1]) && checkconcatRealName(args[2])) {
+        	recieverClient = getClientByNIck(args[1], clients);
+        	recieverClient.SendMessage(clt.GetNickname() + " PRVMSG " + recieverClient.GetNickname() + " " + concatMsg(args) + "\r\n");
+			return true;
+		}
+		else if (!isChannel(args[1])) {
+        	recieverClient = getClientByNIck(args[1], clients);
+			recieverClient.SendMessage(clt.GetNickname() + " PRVMSG " + recieverClient.GetNickname() + " " + args[2] + "\r\n");
+			return true;
+		}
+		if (checkconcatRealName(args[2]))
+			cltChannel->brodcastMode(irc_srv ,clt.GetNickname() + " PRVMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
+		else
+			cltChannel->brodcastMode(irc_srv ,clt.GetNickname() + " PRVMSG " + args[1] + " :" + args[2] + "\r\n");
+		return true;
+    } catch(const std::exception& e) {
+        clt.SendMessage(e.what());
+        return false;
+    }
+}
