@@ -69,6 +69,7 @@ class Channel {
         bool isUserWelcomed(int fd);
 
         void printChannelInfo() const;
+        std::string addPrefix(Client& clt);
 
         void broadcastJoin(Server& server, int joiner_fd);
         void brodcastMode(Server& server, std::string reply);

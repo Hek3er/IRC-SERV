@@ -321,11 +321,11 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			);
 		if (args.size() < 5)
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(clt.GetNickname(), "USER")
+				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), "USER")
 			);
 		if (!checkArgs(clt, args))
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(clt.GetNickname(), "USER")
+				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), "USER")
 			);
 		if (clt.getAuthLevel() == LEVEL(1))
 			clt.SetAuthLevel(2);

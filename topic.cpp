@@ -24,7 +24,7 @@ std::string    getTopic(std::vector<std::string> args) {
 
 void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
     if (args.size() == 1) {
-        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "TOPIC"));
+        clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetUsername(), "TOPIC"));
         return ; // Not enough parameters
     }
     Channel* working_ch = NULL;
@@ -33,24 +33,24 @@ void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
     if (args.size() > 1) {
         working_ch = ss.getChannel(args[1]);
         if (!working_ch) {
-            clt.SendMessage(ERR_NOSUCHCHANNEL(clt.GetUsername(), args[1]));
+            clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetUsername(), args[1]));
             return ;
         }
         if (!working_ch->isMember(clt.GetFd())) {
-            clt.SendMessage(ERR_NOTONCHANNEL(clt.GetNickname(), working_ch->getName()));
+            clt.SendMessage(ERR_NOTONCHANNEL(ss.getHostName(), clt.GetNickname(), working_ch->getName()));
             return;// ERR_NOTONCHANNEL
         }
     }
     
     if (args.size() == 2) {
         if (working_ch->getTopic().empty()) {
-            clt.SendMessage(RPL_NOTOPIC(clt.GetNickname(), working_ch->getName()));//RPL_NOTOPIC
+            clt.SendMessage(RPL_NOTOPIC(ss.getHostName(), clt.GetNickname(), working_ch->getName()));//RPL_NOTOPIC
             return;
         }
         else {
             topicChangerFd = working_ch->getTopicChanger();
             topicChangerClt = ss.getClient(topicChangerFd);
-            clt.SendMessage(RPL_TOPIC(clt.GetNickname(), working_ch->getName(), working_ch->getTopic()));
+            clt.SendMessage(RPL_TOPIC(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getTopic()));
             clt.SendMessage(RPL_TOPICWHOTIME(clt.GetNickname(), working_ch->getName(), topicChangerClt.GetNickname(), topicChangerClt.GetUsername(), ss.getHostName()));
             return ; //RPL_TOPIC or RPL_NOTOPIC
         }
@@ -58,7 +58,7 @@ void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
 
     if (args.size() > 2) {
         if (working_ch->isTopicRes() && !working_ch->isOp(clt.GetFd())) {
-            clt.SendMessage(ERR_CHANOPRIVSNEEDED(clt.GetUsername(), working_ch->getName()));
+            clt.SendMessage(ERR_CHANOPRIVSNEEDED(ss.getHostName(), clt.GetUsername(), working_ch->getName()));
             return ;
         }
         working_ch->setTopicChanger(clt.GetFd());
