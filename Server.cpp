@@ -30,12 +30,16 @@ std::vector<struct pollfd>& Server::getClientsFds( void ) {
     return (this->_fds);
 }
 
-void    Server::broadcastNick(std::string nickReply) {
-	std::vector<struct pollfd> &fds = this->getClientsFds();
-    for (std::vector<struct pollfd>::const_iterator it = fds.begin() + 1 ; it != fds.end(); ++it) {
-        int fd = it->fd;
-        this->SendMessage(fd, nickReply);
+void    Server::broadcastNick(int fd, std::string nickReply) {
+    bool LocalSend = true;
+    for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
+        if (it->isMember(fd)) {
+            it->brodcastMode(*this, nickReply);
+            LocalSend = false;
+        }
     }
+    if (LocalSend)
+        this->SendMessage(fd, nickReply);
 }
 
 

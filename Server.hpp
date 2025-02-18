@@ -22,7 +22,7 @@ public:
 	Server( std::string port, std::string password );
     void    RunServer( void );
 	static void	SendMessage( int client_fd, std::string message ) ;
-	void    broadcastNick(std::string nickReply);
+	void    broadcastNick(int fd, std::string nickReply);
 	// Getters
 	std::string	GetPort( void ) const;
 	std::string GetPassword( void ) const;

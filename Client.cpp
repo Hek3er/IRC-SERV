@@ -238,7 +238,7 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		if (clt.getAuthLevel() == LEVEL(1))
 			clt.SetAuthLevel(2);
 		if (clt.getAuthLevel() == LEVEL(3))
-			irc_srv.broadcastNick(":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost " + boldGreen("NICK") + " " + args[1] + "\r\n");
+			irc_srv.broadcastNick(clt.GetFd(), ":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost " + "NICK" + " " + args[1] + "\r\n");
 		else
 			std::cout << boldGreen("NICK: ") << args[1] << std::endl;
 		clt.SetNickname(args[1]);
@@ -407,18 +407,18 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 
 		if (!isChannel(args[1]) && checkconcatRealName(args[2])) {
         	recieverClient = getClientByNIck(args[1], clients);
-        	recieverClient.SendMessage(":" + clt.GetNickname() + " PRVIMSG " + recieverClient.GetNickname() + " " + concatMsg(args) + "\r\n");
+        	recieverClient.SendMessage(":" + clt.GetNickname() + " PRIVMSG " + recieverClient.GetNickname() + " :" + concatMsg(args) + "\r\n");
 			return true;
 		}
 		else if (!isChannel(args[1])) {
         	recieverClient = getClientByNIck(args[1], clients);
-			recieverClient.SendMessage(":" + clt.GetNickname() + " PRVIMSG " + recieverClient.GetNickname() + " " + args[2] + "\r\n");
+			recieverClient.SendMessage(":" + clt.GetNickname() + " PRIVMSG " + recieverClient.GetNickname() + " :" + args[2] + "\r\n");
 			return true;
 		}
 		if (checkconcatRealName(args[2]))
-			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRVIMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
+			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
 		else
-			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRVIMSG " + args[1] + " :" + args[2] + "\r\n");
+			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + args[2] + "\r\n");
 		return true;
     } catch(const std::exception& e) {
         clt.SendMessage(e.what());
