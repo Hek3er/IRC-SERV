@@ -41,9 +41,6 @@ class Client {
 		void	SetAuthLevel( int level );
 
 		void	SendMessage( const std::string& msg ) const;
-		void	QueueMessage(const std::string& msg);
-		std::string GetNextMessage( void );
-		bool	HasMessages( void ) const;
 
 		void    StoreBuffer( char *buff, int size );
 		bool    IsBufferReady( void ) const;
@@ -57,7 +54,6 @@ class Client {
 		std::string _username;
 		std::string _realname;
 		std::string	_address;
-		std::queue<std::string> _messages;
 		std::string _buffer;
 		bool        _messageCompleted;
 };

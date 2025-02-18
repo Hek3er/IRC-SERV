@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "stdlib.h"
 #include "stdio.h"
+#include <fcntl.h>
 
 
 std::map<int, Client> Server::_clients;
@@ -66,7 +67,13 @@ void Server::RunServer( void ) {
 		return ;
 	}
 
-    setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, NULL, 1);
+    if (fcntl(this->_sockfd, F_SETFL, O_NONBLOCK) == -1) {
+        std::cerr << "fcntl failed" << std::endl;
+    }
+    // if (setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, NULL, 1) == -1) {
+    //     std::cerr << "setcockopt failed" << std::endl;
+    //     return ;
+    // }
 
 	if (bind(this->_sockfd, res->ai_addr, res->ai_addrlen) == -1) {
 		std::cerr << "Coudn't bind the address" << std::endl;
@@ -78,7 +85,6 @@ void Server::RunServer( void ) {
     }
 
 
-	for (;;) {
         char ad[1024] = {0};
         gethostname(ad, sizeof(ad));
         hostName = std::string(ad);
@@ -109,6 +115,9 @@ void Server::RunServer( void ) {
                       		std::cout << "Coudn't accept" << std::endl;
                       		// return ; // should be removed because the server shoudn't quit
                        	}
+                        if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
+                            std::cerr << "fcntl failed" << std::endl;
+                        }
                         struct pollfd fd;
                         memset(&fd, 0, sizeof(fd));
 
@@ -119,9 +128,6 @@ void Server::RunServer( void ) {
                         Client cl(client_fd);
                         this->_clients[client_fd] = cl;
                         _clients[client_fd].SetAuthLevel(0);
-                        // std::cout << "Clientfd == " << client_fd << std::endl;
-                        // std::cout << "Password : " << this->GetPassword() << std::endl;
-                        // SendMessage(client_fd, WELCOME_REPLY(_clients[client_fd].GetNickname(), std::string(ad)));
                     } else {
                         char buff[1024] = {0};
                         int res = recv(this->_fds[i].fd, buff, 1023, 0);
@@ -130,17 +136,6 @@ void Server::RunServer( void ) {
                         }
 
                         this->_clients[this->_fds[i].fd].StoreBuffer(buff, res);
-
-                        // std::cout << "read : " << res << " from buffer: " << buff << std::endl;
-
-                        // std::string test(buff);
-                        // for (int i = 0; i < test.length() + 1; i++) {
-                        //     std::cout << test[i] << " = " << (int)(test[i]) << std::endl;
-                        // }
-                        
-                        // if (test == "hello\n") {
-                        //     this->_clients[this->_fds[i].fd].SendMessage("welcome to the server\n");
-                        // }
 
                         if (res == 0) {
                             std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
@@ -171,35 +166,8 @@ void Server::RunServer( void ) {
                                     topic_cmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "PRIVMSG" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     privmsg(*this, _clients[this->_fds[i].fd], this->_clients, args);
-                                
+                            }
                         }
-                        // else {
-                        //     if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
-                                // std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << this->_clients[this->_fds[i].fd].GetBuffer();
-                        //     }
-                        // }
-                        // if (test.length() > 4 && test.substr(0,4).compare("JOIN ")) {
-                        //     std::string command = test.substr(5);  // Get everything after "JOIN "
-                        //     size_t newline_pos = command.find_first_of("\r\n");
-                        //     if (newline_pos != std::string::npos) {
-                        //         command = command.substr(0, newline_pos);  // Remove the newline
-                        //         }
-                        //     joinCmd(*this, _clients[this->_fds[i].fd], command);
-                        //     //joinCmd(*this, _clients[this->_fds[i].fd], test.substr(5));
-                        // }
-                        }
-                        
-                    }
-                } else if (this->_fds[i].revents & POLLOUT) {
-                    int client = this->_fds[i].fd;
-
-                    if (_clients[client].HasMessages()) {
-                        std::string msg = _clients[client].GetNextMessage();
-                        if ((send(client, msg.c_str(), msg.length(), 0)) == -1) {
-                            std::cerr << "Cound't send message to " << client << std::endl;
-                        }
-                    } else {
-                        this->_fds[i].events &= ~POLLOUT;
                     }
                 }
             }
@@ -212,20 +180,13 @@ void Server::RunServer( void ) {
     	 *
     	 * This is used so we can have instante lookup times when we need to make direct messages
     	*/
-	}
 	// std::cout << "sockfd => " << this->_sockfd << " Clientfd => " << client_fd << std::endl;
 	freeaddrinfo(res);
 }
-
 void	Server::SendMessage( int client_fd, std::string message )  {
     if (_clients.find(client_fd) != _clients.end()) {
-        _clients[client_fd].QueueMessage(message);
-
-        for (size_t i = 0; i < _fds.size(); i++) {
-            if (client_fd == _fds[i].fd) {
-                _fds[i].events |= POLLOUT;
-                break;
-            }
+        if ((send(client_fd, message.c_str(), message.length(), 0)) == -1) {
+            std::cerr << "Cound't send message to " << client_fd << std::endl;
         }
     } else {
         std::cerr << "Client Not found fd : " << client_fd << std::endl;

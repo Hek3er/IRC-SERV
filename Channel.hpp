@@ -72,6 +72,7 @@ class Channel {
 
         void broadcastJoin(Server& server, int joiner_fd);
         void brodcastMode(Server& server, std::string reply);
+        void brodcastMessage(Server& server, int fd, std::string reply);
         void brodcastTopic(Server& server, std::string TopicReply);
 
 

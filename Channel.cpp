@@ -217,6 +217,14 @@ void    Channel::brodcastMode(Server& server, std::string modeReply) {
     }
 }
 
+void    Channel::brodcastMessage(Server& server, int fd, std::string modeReply) {
+    for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
+        if (*it != fd) {
+            server.SendMessage(*it, modeReply);
+        }
+    }
+}
+
 void    Channel::brodcastTopic(Server& server, std::string TopicReply) {
     for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
         int fd = *it;

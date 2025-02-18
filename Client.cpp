@@ -96,24 +96,6 @@ bool    Client::IsRegistered( void ) const {
     return (this->_registered);
 }
 
-
-void Client::QueueMessage(const std::string& msg) {
-	this->_messages.push(msg);
-}
-
-bool Client::HasMessages( void ) const {
-	return (!this->_messages.empty());
-}
-
-std::string Client::GetNextMessage( void ) {
-	if (!this->_messages.empty()) {
-		std::string message = this->_messages.front();
-		this->_messages.pop();
-		return message;
-	}
-	return "";
-}
-
 void Client::SendMessage( const std::string& msg ) const {
 	Server::SendMessage(this->_fd, msg);
 }
@@ -332,7 +314,7 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 		else
 			clt.SetAuthLevel(3);
 		std::cout << boldGreen("USER: ") << clt.GetUsername() << " 0 * " << clt.getRealName() << std::endl;
-		irc_srv.SendMessage(clt.GetFd(), WELCOME_REPLY(clt.GetNickname(), std::string("ad")));
+		clt.SendMessage(WELCOME_REPLY(clt.GetNickname(), std::string("ad")));
 		return true;
 	} catch (const std::exception& e) {
 		clt.SendMessage(e.what());
@@ -416,9 +398,9 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			return true;
 		}
 		if (checkconcatRealName(args[2]))
-			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
+			cltChannel->brodcastMessage(irc_srv, clt.GetFd() ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
 		else
-			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + args[2] + "\r\n");
+			cltChannel->brodcastMessage(irc_srv, clt.GetFd() ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + args[2] + "\r\n");
 		return true;
     } catch(const std::exception& e) {
         clt.SendMessage(e.what());
