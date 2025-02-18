@@ -407,18 +407,18 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 
 		if (!isChannel(args[1]) && checkconcatRealName(args[2])) {
         	recieverClient = getClientByNIck(args[1], clients);
-        	recieverClient.SendMessage(":" + clt.GetNickname() + " PRVMSG " + recieverClient.GetNickname() + " " + concatMsg(args) + "\r\n");
+        	recieverClient.SendMessage(":" + clt.GetNickname() + " PRVIMSG " + recieverClient.GetNickname() + " " + concatMsg(args) + "\r\n");
 			return true;
 		}
 		else if (!isChannel(args[1])) {
         	recieverClient = getClientByNIck(args[1], clients);
-			recieverClient.SendMessage(":" + clt.GetNickname() + " PRVMSG " + recieverClient.GetNickname() + " " + args[2] + "\r\n");
+			recieverClient.SendMessage(":" + clt.GetNickname() + " PRVIMSG " + recieverClient.GetNickname() + " " + args[2] + "\r\n");
 			return true;
 		}
 		if (checkconcatRealName(args[2]))
-			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRVMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
+			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRVIMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
 		else
-			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRVMSG " + args[1] + " :" + args[2] + "\r\n");
+			cltChannel->brodcastMode(irc_srv ,":" + clt.GetNickname() + " PRVIMSG " + args[1] + " :" + args[2] + "\r\n");
 		return true;
     } catch(const std::exception& e) {
         clt.SendMessage(e.what());
