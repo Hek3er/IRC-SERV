@@ -14,11 +14,13 @@
 #define RPL_CHANNELMODEIS(server, client, channel, modestirng, modes_arguments) ":" + server + " 324 " + client + " " + channel + " " + modestirng + " " + modes_arguments + "\r\n"
 
 //ERRORS
+#define RPL_CREATIONTIME(server, client, channel, time) ":" + server + " 329 " + client + " " + channel + " " + time + "\r\n" 
 #define RPL_NOTOPIC(server, client, channel) ":" + server + " 331 " + client + " " + channel + " :No topic is set\r\n"
 #define RPL_TOPIC(server, client, channel, topic) ":" + server + " 332 " + client + " " + channel + " :" + topic + "\r\n"
-#define RPL_TOPICWHOTIME(client, channel, clientChanger, usernameChanger, servername) "333 " + client + " " + channel + " " + clientChanger + "!" + usernameChanger + "@" + servername + "\r\n"
+#define RPL_TOPICWHOTIME(client, channel, clientChanger, servername, time)":" + servername +  " 333 " + client + " " + channel + " " + clientChanger + " " + time + "\r\n"
 #define ERR_NOSUCHNICK(server, client , nick) ":" + server + " 401 " + client + " " + nick + " :No such nick\r\n"
 #define ERR_NOSUCHCHANNEL(server, client, channel) ":" + server + " 403 " + client + " " + channel + " :" + "No such channel\r\n"
+#define ERR_USERNOTINCHANNEL(server, client, nick, channel) ":" + server + " 441 " + client + " " + nick + " " + channel + " :They aren't on that channel\r\n"
 #define ERR_NOTONCHANNEL(server, client, channel) ":" + server + " 442 " + client + " " + channel + " :You're not on that channel\r\n"
 #define ERR_USERONCHANNEL(server, client, nickname, channel) ":" + server + " 443 " + client + " " + nickname + " " + channel + " :is already on channel\r\n"
 #define ERR_NEEDMOREPARAMS(server, client, cmd) ":" + server + " 461 " + client + " " + cmd + " :" + "Not enough parameters\r\n"

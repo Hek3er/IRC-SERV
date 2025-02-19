@@ -12,6 +12,8 @@ Channel::Channel(std::string channel_name) : name(channel_name) {
     topic_res = false;
     is_Key_Protected = false;
     key = "";
+    creation_time = getTime();
+    topic_time = "";
 }
 
 Channel::Channel(std::string channel_name, std::string channel_key)
@@ -23,6 +25,8 @@ Channel::Channel(std::string channel_name, std::string channel_key)
     topic_res = false;
     is_Key_Protected = true;
     key = channel_key;
+    creation_time = getTime();
+    topic_time = "";
     }
 
 Channel::Channel(const Channel& cpy) :
@@ -36,7 +40,9 @@ Channel::Channel(const Channel& cpy) :
     is_Key_Protected(cpy.is_Key_Protected),
     clients_fd(cpy.clients_fd),
     operators_fd(cpy.operators_fd),
-    inviteds_fd(cpy.inviteds_fd)
+    inviteds_fd(cpy.inviteds_fd),
+    creation_time(cpy.creation_time),
+    topic_time(cpy.topic_time)
 {
 }
 
@@ -53,6 +59,8 @@ Channel& Channel::operator=(const Channel& other) {
         clients_fd = other.clients_fd;
         operators_fd = other.operators_fd;
         inviteds_fd = other.inviteds_fd;
+        creation_time = other.creation_time;
+        topic_time = other.topic_time;
     }
     return *this;
 }
@@ -213,8 +221,8 @@ void Channel::broadcastJoin(Server& server, int joiner_fd) {
     for (std::set<int>::iterator it = clients_fd.begin(); it != clients_fd.end(); ++it) {
         int fd = *it;
         server.SendMessage(fd, joinreply);
-        server.SendMessage(fd, list);
     }
+    server.SendMessage(joiner_fd, list);
 }
 
 void    Channel::brodcastMode(Server& server, std::string modeReply) {
@@ -229,6 +237,18 @@ void    Channel::brodcastTopic(Server& server, std::string TopicReply) {
         int fd = *it;
         server.SendMessage(fd, TopicReply);
     }
+}
+
+void    Channel::setTopicDate(std::string date) {
+    topic_time = date;
+}
+
+std::string Channel::getTopicDate() {
+    return topic_time;
+}
+
+std::string Channel::getChannelTime() {
+    return creation_time;
 }
 
 std::vector<std::string> split(std::string str, char del) {
@@ -253,31 +273,10 @@ std::vector<std::string> split(std::string str, char del) {
     return result;
 }
 
-// void Channel::printChannelInfo() const {
-//     std::cout << "\n=== Channel Information ===" << std::endl;
-//     std::cout << "Name: " << name << std::endl;
-    
-//     // Topic
-//     std::cout << "Topic: " << (topic.empty() ? "No topic set" : topic) << std::endl;
-//     std::cout << "Topic Restriction: " << (topic_res ? "Yes" : "No") << std::endl;
-    
-//     // Security Settings
-//     std::cout << "Key Protected: " << (isKeyProtected ? "Yes" : "No") << std::endl;
-//     if (isKeyProtected)
-//         std::cout << "Key: " << key << std::endl;
-    
-//     std::cout << "Invite Only: " << (invite_only ? "Yes" : "No") << std::endl;
-    
-//     // User Limits
-//     std::cout << "User Limit: " << (limit > 0 ? std::to_string(limit) : "No limit") << std::endl;
-//     std::cout << "Current Users: " << clients_fd.size() << std::endl;
-    
-//     // Members List
-//     std::cout << "\nMembers:" << std::endl;
-//     for (const auto& member : clients) {
-//         std::cout << "- " << member.GetNickname();
-//         std::cout << std::endl;
-//     }
-    
-//     std::cout << "========================\n" << std::endl;
-// }
+std::string getTime(void)
+{
+	std::stringstream convert;
+	convert << time(NULL);
+	return (convert.str());
+}
+

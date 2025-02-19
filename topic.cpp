@@ -51,7 +51,7 @@ void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
             topicChangerFd = working_ch->getTopicChanger();
             topicChangerClt = ss.getClient(topicChangerFd);
             clt.SendMessage(RPL_TOPIC(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getTopic()));
-            clt.SendMessage(RPL_TOPICWHOTIME(clt.GetNickname(), working_ch->getName(), topicChangerClt.GetNickname(), topicChangerClt.GetUsername(), ss.getHostName()));
+            clt.SendMessage(RPL_TOPICWHOTIME(clt.GetNickname(), working_ch->getName(), topicChangerClt.GetNickname(), ss.getHostName(), working_ch->getTopicDate()));
             return ; //RPL_TOPIC or RPL_NOTOPIC
         }
     }
@@ -64,6 +64,7 @@ void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
         working_ch->setTopicChanger(clt.GetFd());
         std::string topic = getTopic(args);
         working_ch->setTopic(topic);
+        working_ch->setTopicDate(getTime());
         working_ch->brodcastTopic(ss, TOPIC_CHANGE(clt.GetNickname(), clt.GetUsername(), ss.getHostName(), working_ch->getName(), topic));
         // if (args.size() == 3 && args[2] == ":") {
         //     working_ch->setTopic("");

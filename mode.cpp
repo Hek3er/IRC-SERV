@@ -119,7 +119,6 @@ bool executeModes(Server& ss,Channel& ch, Client& clt, std::string &parameter, s
 }
 
 
-
 void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     std::vector<std::string> modes;
     std::vector<std::string> parameters;
@@ -140,6 +139,7 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     }
     if (args.size() == 2) {
         clt.SendMessage(RPL_CHANNELMODEIS(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getModes().first, working_ch->getModes().second));
+        clt.SendMessage(RPL_CREATIONTIME(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getChannelTime()));
         return ;
     }
 
