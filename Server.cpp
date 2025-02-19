@@ -43,6 +43,9 @@ void    Server::broadcastNick(int fd, std::string nickReply) {
         this->SendMessage(fd, nickReply);
 }
 
+std::string boldGreeen(const std::string &str) {
+	return std::string("\033[1;32m") + str + "\033[0m";
+}
 
 void Server::RunServer( void ) {
 	// ⚠️ Maybe i should throw exceptions when error?
@@ -147,14 +150,14 @@ void Server::RunServer( void ) {
                         } else {
                             if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
                                 std::string buffer(this->_clients[this->_fds[i].fd].GetBuffer());
-                                std::cout << _clients[_fds[i].fd].GetUsername() << " fd [ " << this->_fds[i].fd << " ] : " << buffer;
+                                std::cerr << boldGreeen("from client [") << std::to_string(this->_fds[i].fd) << boldGreeen("]") + " : " << buffer;
                                 
                                 std::vector<std::string> args = split(buffer, ' ');
                                 if (args[0] == "PASS")
                                     passCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "NICK" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
                                     nickCmd(*this, _clients[this->_fds[i].fd], this->_clients, args);
-                                if (args[0] == "USER" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(2))
+                                if (args[0] == "USER" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
                                     userCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "JOIN" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     joinCmd(*this, _clients[this->_fds[i].fd], args);

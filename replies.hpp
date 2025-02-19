@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#define WELCOME_REPLY(nick, ipaddress) ":" + ipaddress + " 001 " + nick + " :Welcome to IRC SERVER " + nick + "!user@host\r\n"
+#define WELCOME_REPLY(fd, nick, ipaddress, username, hostName) fd + ": 001 " + nick + " :Welcome to IRC SERVER " +  "!" + username + "@" + hostName + "\r\n"
 #define JOIN_REPLY(nick, username, channelname, ipaddress) ":" + nick + "!~" + username + "@" + ipaddress + " JOIN " + channelname + "\r\n"
 
 #define INVITE_REPLY(client, invited_user, ipadress, nickname, channel) ":" + client + "!" + invited_user + "@" + ipadress + " INVITE " + nickname + " " + channel + "\r\n"
@@ -17,7 +17,7 @@
 #define RPL_NOTOPIC(client, channel) "331 " + client + " " + channel + " :No topic is set\r\n"
 #define RPL_TOPIC(client, channel, topic) "332 " + client + " " + channel + " :" + topic + "\r\n"
 #define RPL_TOPICWHOTIME(client, channel, clientChanger, usernameChanger, servername) "333 " + client + " " + channel + " " + clientChanger + "!~" + usernameChanger + "@" + servername + "\r\n"
-#define ERR_NOSUCHNICK(client , nick) "401" + client + " " + nick + " :No such nick\r\n"
+#define ERR_NOSUCHNICK(client , nick) "401 " + client + " " + nick + " :No such nick\r\n"
 #define ERR_NOSUCHCHANNEL(client, channel) "403 " + client + " " + channel + " :" + "No such channel\r\n"
 #define ERR_NOTONCHANNEL(client, channel) "442" + client + " " + channel + " :You're not on that channel\r\n"
 #define ERR_USERONCHANNEL(client, nickname, channel) "443" + client + " " + nickname + " " + channel + " :is already on channel\r\n"

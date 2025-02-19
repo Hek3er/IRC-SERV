@@ -199,17 +199,26 @@ std::string boldGreen(const std::string &str) {
 	return std::string("\033[1;32m") + str + "\033[0m";
 }
 
+bool checkconcatRealName(std::string &real_name) {
+	if (real_name[0] == ':')
+		return true;
+	else 
+		return false;
+}
+
 bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args)
 {
 	try {
 		bool alreadyseted = false;
-		if (args.size() == 1)
+		if (args.size() != 1 && checkconcatRealName(args[1]))
+			args[1] = args[1].substr(1);
+		if (args.size() == 1 || args[1] == "")
 			throw std::runtime_error(
-				ERR_NONICKNAMEGIVEN(clt.GetNickname())
+				ERR_NEEDMOREPARAMS(clt.GetNickname(), args[0])
 			);
 		if (!findNickNameMatch(args[1], clients))
 			throw std::runtime_error(
-				ERR_NICKNAMEINUSE(clt.GetNickname(), clt.GetNickname())
+				ERR_NICKNAMEINUSE(clt.GetNickname(), args[1])
 			);
 		if (!CheckNickname(args[1]))
 			throw std::runtime_error(
@@ -217,13 +226,21 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			);
 		if (clt.GetNickname() != "")
 			alreadyseted = true;
-		if (clt.getAuthLevel() == LEVEL(1))
-			clt.SetAuthLevel(2);
+		
 		if (clt.getAuthLevel() == LEVEL(3))
 			irc_srv.broadcastNick(clt.GetFd(), ":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost " + "NICK" + " " + args[1] + "\r\n");
-		else
-			std::cout << boldGreen("NICK: ") << args[1] << std::endl;
-		clt.SetNickname(args[1]);
+		// else
+		// 	std::cout << boldGreen("NICK: ") << args[1] << std::endl;
+		
+		if (clt.getAuthLevel() == LEVEL(1)) {
+			clt.SetAuthLevel(2);
+			clt.SetNickname(args[1]);
+		} else if (clt.getAuthLevel() == LEVEL(2)) {
+			clt.SetAuthLevel(3);
+			clt.SetNickname(args[1]);
+			clt.SendMessage(WELCOME_REPLY(std::to_string(clt.GetFd()), clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
+		}
+		
 		return true;
 	} catch (const std::exception& e) {
 		clt.SendMessage(e.what());
@@ -243,12 +260,6 @@ bool checkName(std::string &user_name) {
 	return true;
 }
 
-bool checkconcatRealName(std::string &real_name) {
-	if (real_name[0] == ':')
-		return true;
-	else 
-		return false;
-}
 
 std::string concatRealName(std::vector<std::string>& args) {
 	std::string result;
@@ -263,33 +274,22 @@ std::string concatRealName(std::vector<std::string>& args) {
 }
 
 bool checkArgs(Client& clt, std::vector<std::string>& args) {
-	std::map<int, int> checks;
-	checks[0] = 0;
-	checks[1] = 0;
-	checks[2] = 0;
+	int check;
+	check = 0;
 	int	count = 0;
 	if (args[1].empty() || args[2].empty() || args[3].empty() || args[4].empty())
 		return false;
-	if (!checkName(args[1]))
-		checks[0] = 1;
-	if (!checkName(args[4]))
-		checks[1] = 1;
 	if (checkconcatRealName(args[4]))
-		checks[2] = 1;
+		check = 1;
 	if (memcmp("0", args[2].c_str(), args[2].length()) != 0)
 		return false;
 	if (memcmp("*", args[3].c_str(), args[3].length()) != 0)
 		return false;
 	
-	if (checks[0])
-		clt.SetUsername("~" + clt.GetNickname());
-	else
-		clt.SetUsername("~" + args[1]);
-	if (checks[1])
-		clt.SetRealname(clt.GetNickname());
-	else
-		clt.SetRealname(args[4]);
-	if (checks[2])
+	clt.SetUsername("~" + args[1]);
+	clt.SetRealname(args[4]);
+
+	if (check)
 		clt.SetRealname(concatRealName(args));
 	return true;
 }
@@ -311,10 +311,11 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			);
 		if (clt.getAuthLevel() == LEVEL(1))
 			clt.SetAuthLevel(2);
-		else
+		else if (clt.getAuthLevel() == LEVEL(2)) {
 			clt.SetAuthLevel(3);
-		std::cout << boldGreen("USER: ") << clt.GetUsername() << " 0 * " << clt.getRealName() << std::endl;
-		clt.SendMessage(WELCOME_REPLY(clt.GetNickname(), std::string("ad")));
+			clt.SendMessage(WELCOME_REPLY(std::to_string(clt.GetFd()), clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
+		}
+		// std::cout << boldGreen("USER: ") << clt.GetUsername() << " 0 * " << clt.getRealName() << std::endl;
 		return true;
 	} catch (const std::exception& e) {
 		clt.SendMessage(e.what());
@@ -356,7 +357,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 	try {
 		if (args.size() == 1)
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(clt.GetNickname(), "PRIVMSG")
+				ERR_NEEDMOREPARAMS(clt.GetNickname(), clt.GetNickname())
 			);
         Client	recieverClient;
 		// valid nickname, no text
