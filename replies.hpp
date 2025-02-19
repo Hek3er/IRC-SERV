@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#define WELCOME_REPLY(fd, nick, ipaddress, username, hostName) fd + ": 001 " + nick + " :Welcome to IRC SERVER " +  "!" + username + "@" + hostName + "\r\n"
+#define WELCOME_REPLY(fd, nick, ipaddress, username, hostName) ": 001 " + nick + " :Welcome to IRC SERVER " +  "!" + username + "@" + hostName + "\r\n"
 #define JOIN_REPLY(nick, username, channelname, ipaddress) ":" + nick + "!~" + username + "@" + ipaddress + " JOIN " + channelname + "\r\n"
 
 #define INVITE_REPLY(client, invited_user, ipadress, nickname, channel) ":" + client + "!" + invited_user + "@" + ipadress + " INVITE " + nickname + " " + channel + "\r\n"
@@ -12,6 +12,8 @@
 #define TOPIC_CHANGE(nick, user, host, channel, newTopic)  ":" + nick + "!" + user + "@" + host + " TOPIC " + channel + " :" + newTopic + "\r\n"
 
 #define RPL_CHANNELMODEIS(client, channel,modestirng, modes_arguments) "324 " + client + " " + channel + " " + modestirng + " " + modes_arguments + "\r\n"
+
+#define PRIVMSDG_REPLY() "\r\n"
 
 //ERRORS
 #define RPL_NOTOPIC(client, channel) "331 " + client + " " + channel + " :No topic is set\r\n"

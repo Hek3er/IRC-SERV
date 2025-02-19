@@ -395,7 +395,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		}
 		else if (!isChannel(args[1])) {
         	recieverClient = getClientByNIck(args[1], clients);
-			recieverClient.SendMessage(":" + clt.GetNickname() + " PRIVMSG " + recieverClient.GetNickname() + " :" + args[2] + "\r\n");
+			recieverClient.SendMessage(":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost"  +" PRIVMSG " + recieverClient.GetNickname() + " :" + args[2] + "\r\n");
 			return true;
 		}
 		if (checkconcatRealName(args[2]))
