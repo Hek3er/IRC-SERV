@@ -89,4 +89,5 @@ bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
 void    inviteCmd(Server& server,Client& clt, std::vector<std::string> args);
 void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args);
 void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args);
+void    kickCmd(Server& ss, Client& clt, std::vector<std::string> args);
 std::vector<std::string> split(std::string str, char del);

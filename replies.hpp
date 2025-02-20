@@ -13,6 +13,8 @@
 
 #define RPL_CHANNELMODEIS(server, client, channel, modestirng, modes_arguments) ":" + server + " 324 " + client + " " + channel + " " + modestirng + " " + modes_arguments + "\r\n"
 
+#define KICK_REPLY(nick, user, host, channel, target, reason) ":" + nick + "!" + user + "@" + host + " KICK " + channel + " " + target + " :" + reason + "\r\n"
+
 //ERRORS
 #define RPL_CREATIONTIME(server, client, channel, time) ":" + server + " 329 " + client + " " + channel + " " + time + "\r\n" 
 #define RPL_NOTOPIC(server, client, channel) ":" + server + " 331 " + client + " " + channel + " :No topic is set\r\n"

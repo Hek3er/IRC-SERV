@@ -165,6 +165,8 @@ void Server::RunServer( void ) {
                                     modeCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "TOPIC" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     topic_cmd(*this, _clients[this->_fds[i].fd], args);
+                                if (args[0] == "KICK" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                    kickCmd(*this, _clients[this->_fds[i].fd], args);
                                 
                         }
                         // else {
