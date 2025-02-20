@@ -33,7 +33,7 @@ void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args) {
     if (args.size() > 1) {
         working_ch = ss.getChannel(args[1]);
         if (!working_ch) {
-            clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetUsername(), args[1]));
+            clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetNickname(), args[1]));
             return ;
         }
         if (!working_ch->isMember(clt.GetFd())) {

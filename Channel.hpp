@@ -81,6 +81,8 @@ class Channel {
         void brodcastMode(Server& server, std::string reply);
         void brodcastTopic(Server& server, std::string TopicReply);
 
+        bool stillMemebers();
+
 
 };
 

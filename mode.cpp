@@ -129,12 +129,12 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     Client* target_clt;
 
     if (args.size() == 1) {
-        clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetUsername(), "MODE"));
+        clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetNickname(), "MODE"));
         return ;
     }
     working_ch = ss.getChannel(args[1]);
     if (!working_ch) {
-        clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetUsername(), args[1]));
+        clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetNickname(), args[1]));
         return; //ERR_NOSUCHCHANNEL 
     }
     if (args.size() == 2) {
@@ -144,7 +144,7 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     }
 
     if (!working_ch->isOp(clt.GetFd())) {
-        clt.SendMessage(ERR_CHANOPRIVSNEEDED(ss.getHostName(), clt.GetUsername(), working_ch->getName()));
+        clt.SendMessage(ERR_CHANOPRIVSNEEDED(ss.getHostName(), clt.GetNickname(), working_ch->getName()));
         return;
     }
     getModes(modes, parameters, args);

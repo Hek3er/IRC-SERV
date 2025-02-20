@@ -38,6 +38,23 @@ void    Server::broadcastNick(std::string nickReply) {
     }
 }
 
+void Server::bleachClient(int fd) {
+    for (int i = channels.size() - 1; i >= 0; i--) {
+        channels[i].removeMemeber(fd);
+        if (!channels[i].stillMemebers())
+            removeChannle(channels[i].getName());
+    }
+}
+
+void	Server::removeChannle(std::string name) {
+    for (int i = channels.size() - 1; i >= 0; i--) {
+        if (channels[i].getName() == name) {
+            channels.erase(channels.begin() + i);
+            std::cout << "channel removed\n";
+            break ;
+        }
+    }
+}
 
 void Server::RunServer( void ) {
 	// ⚠️ Maybe i should throw exceptions when error?
@@ -141,6 +158,7 @@ void Server::RunServer( void ) {
                         if (res == 0) {
                             std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
                             close(this->_fds[i].fd);
+                            bleachClient(this->_fds[i].fd);
                             this->_fds.erase(this->_fds.begin() + i);
                             continue;
                         } else if (res <0) {

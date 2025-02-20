@@ -5,7 +5,7 @@ bool    invite(Server& irc_srv, Client& clt, std::string nickname, std::string c
     Channel* workingChannel = irc_srv.getChannel(ch_name);
     if (!workingChannel)
     {
-        clt.SendMessage(ERR_NOSUCHCHANNEL(irc_srv.getHostName(), clt.GetUsername(), ch_name));
+        clt.SendMessage(ERR_NOSUCHCHANNEL(irc_srv.getHostName(), clt.GetNickname(), ch_name));
         return false; // channel doesnt exist! ERR_NOSUCHCHANNEL
     }
 

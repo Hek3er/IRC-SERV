@@ -80,6 +80,7 @@ void   Channel::addInvite(int fd) {
 }
 void Channel::removeMemeber(int fd) {
     clients_fd.erase(fd);
+    removeOp(fd);
 }
 void Channel::removeOp(int fd) {
     operators_fd.erase(fd);
@@ -249,6 +250,14 @@ std::string Channel::getTopicDate() {
 
 std::string Channel::getChannelTime() {
     return creation_time;
+}
+
+bool Channel::stillMemebers() {
+    if (!clients_fd.empty()) {
+        std::cout<<"ba9i 3amra\n";
+        return true;
+    }
+    return false;
 }
 
 std::vector<std::string> split(std::string str, char del) {
