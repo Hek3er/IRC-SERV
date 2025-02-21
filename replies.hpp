@@ -15,6 +15,8 @@
 
 #define KICK_REPLY(nick, user, host, channel, target, reason) ":" + nick + "!" + user + "@" + host + " KICK " + channel + " " + target + " :" + reason + "\r\n"
 
+#define PRIVMSG_REPLY(nick, user, host, target, reason) ":" + nick + "!" + user + "@" + host + " PRIVMSG " + " " + target + " :" + reason + "\r\n"
+
 //ERRORS
 #define RPL_CREATIONTIME(server, client, channel, time) ":" + server + " 329 " + client + " " + channel + " " + time + "\r\n" 
 #define RPL_NOTOPIC(server, client, channel) ":" + server + " 331 " + client + " " + channel + " :No topic is set\r\n"

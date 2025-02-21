@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
+#include "replies.hpp"
 #include <exception>
 
 Client::Client( ) {
@@ -327,12 +328,27 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 
 void	bountyBot(Client &cleint, Client &bot, std::string &name) {
 	if (name == "LUFFY" || name == ":LUFFY")
-	{
-		std::cout << "not nickanme ::: " << bot.GetNickname() << std::endl;
-		cleint.SendMessage(":" + bot.GetNickname() + "!" + bot.GetUsername() + "@localhost"  +" PRIVMSG " + cleint.GetNickname() + " :" + "Luffy is worth 1,000,000,000 $" + "\r\n");
-	}
-	else if (name == "SHANKS" || name == ":SHANKS")
-		cleint.SendMessage(":" + bot.GetNickname() + "!" + bot.GetUsername() + "@localhost"  +" PRIVMSG " + cleint.GetNickname() + " :" + "SHANKS is worth 1,000,000,000 $" + "\r\n");
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "Luffy 👊🏻 is worth 3,000,000,000 💰"));
+	else if (name == "NAMI" || name == ":NAMI")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "NAMI 👙 is worth 366,000,000 💰"));
+	else if (name == "USSOP" || name == ":USSOP")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "USSOP 🎯 is worth 500,000,000 💰"));
+	else if (name == "SANJI" || name == ":SANJI")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "SANJI 🦵 is worth 1,032,000,000 💰"));
+	else if (name == "ZORO" || name == ":ZORO")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "ZORO ⚔️ is worth 1,111,000,000 💰"));
+	else if (name == "ROBIN" || name == ":ROBIN")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "ROBIN 👢 is worth 930,000,000 💰"));
+	else if (name == "CHOPPER" || name == ":CHOPPER")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "CHOPPER 🧸ྀི is worth 1,000 💰"));
+	else if (name == "FRANKY" || name == ":FRANKY")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "FRANKY 🤖 is worth 394,000,000 💰"));
+	else if (name == "BROOK" || name == ":BROOK")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "BROOK 💀 is worth 383,000,000 💰"));
+	else if (name == "JINBE" || name == ":JINBE")
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "JINBE 🌊 is worth 1,100,000,000 💰"));
+	else
+		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "this bot is only for Straw Hat 👒🏴‍☠️☠🍖"));
 }
 
 // PRIVMSG
@@ -371,30 +387,32 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			throw std::runtime_error(
 				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), args[0])
 			);
+
         Client	recieverClient;
-		// valid nickname, no text
         if (args.size() == 2 && !isChannel(args[1]) && !findNickNameMatch(args[1], clients))
             throw std::runtime_error(
                 ERR_NOTEXTTOSEND(clt.GetNickname(), args[0])
             );
-		// not a valide nickname and not a valid channel
+
         if (args.size() >= 2 && !isChannel(args[1]) && findNickNameMatch(args[1], clients))
 			throw std::runtime_error(
 				ERR_NOSUCHNICK(irc_srv.getHostName(), clt.GetNickname(), args[1])
 			);
 		Channel *cltChannel = irc_srv.getChannel(args[1]);
 
-		// not a valid channel
+		if (args[1][0] == ':')
+			args[1] = args[1].substr(1);
+		
 		if (isChannel(args[1]) && cltChannel == NULL)
 			throw std::runtime_error(
                 ERR_CANNOTSENDTOCHAN(clt.GetNickname(), args[1])
             );
-		// valid channel but not a member
+		
 		if (isChannel(args[1]) && cltChannel != NULL && !cltChannel->isMember(clt.GetFd()))
 			throw std::runtime_error(
                 ERR_CANNOTSENDTOCHAN(clt.GetNickname(), args[1])
             );
-		// valid channel and member but no text
+		
 		if (args.size() == 2 && isChannel(args[1]) && cltChannel != NULL && cltChannel->isMember(clt.GetFd()))
 			throw std::runtime_error(
                 ERR_NOTEXTTOSEND(clt.GetNickname(), args[0])
@@ -402,7 +420,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 
 		if (!isChannel(args[1]) && checkconcatRealName(args[2])) {
         	recieverClient = getClientByNIck(args[1], clients);
-        	recieverClient.SendMessage(":" + clt.GetNickname() + " PRIVMSG " + recieverClient.GetNickname() + " :" + concatMsg(args) + "\r\n");
+			recieverClient.SendMessage(":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost"  +" PRIVMSG " + recieverClient.GetNickname() + " :" + concatMsg(args) + "\r\n");
 			if (args[1] == "BOUNTYBOT" || args[1] == ":BOUNTYBOT")
 				bountyBot(clt, recieverClient, args[2]);
 			return true;
@@ -410,7 +428,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		else if (!isChannel(args[1])) {
         	recieverClient = getClientByNIck(args[1], clients);
 			recieverClient.SendMessage(":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost"  +" PRIVMSG " + recieverClient.GetNickname() + " :" + args[2] + "\r\n");
-			if (args[1] == "BOUNTYBOT" || args[1] == ":BOUNTYBOT")
+			if (args[1] == "BOUNTYBOT")
 				bountyBot(clt, recieverClient, args[2]);
 			return true;
 		}
