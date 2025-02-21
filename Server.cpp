@@ -118,6 +118,41 @@ void Server::RunServer( void ) {
         fd.events = POLLIN;
         this->_fds.push_back(fd);
 
+        // ///// BOT
+        int sockfdBot = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfdBot == -1) {
+            std::cerr << "Failed to create socket" << std::endl;
+            return;
+        }
+
+        struct sockaddr_in serveraddr;
+        memset(&serveraddr, 0, sizeof(serveraddr));
+        serveraddr.sin_family = AF_INET;
+        serveraddr.sin_port = htons(6667);
+        inet_pton(sockfdBot ,"127.0.0.1", &serveraddr.sin_addr);
+
+        if (connect(sockfdBot, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1) {
+            std::cerr << "Failed to connect the BOUNTYBOT" << std::endl;
+        }
+
+        Client bot;
+
+        bot.SetFd(sockfdBot);
+        bot.SetNickname("BOUNTYBOT");
+        bot.SetUsername("BOUNTYBOT");
+        bot.SetRealname("BOUNTYBOT");
+        bot.SetAddress("");
+        bot.SetAuthLevel(3);
+        this->_clients[sockfdBot] = bot;
+
+        struct pollfd botfd;
+        memset(&botfd, 0, sizeof(botfd));
+        botfd.fd = sockfdBot;
+        botfd.events = POLLIN;
+        this->_fds.push_back(botfd);
+        
+        ///// END BOT
+
         while(1) {
             int client_fd;
 

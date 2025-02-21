@@ -13,6 +13,7 @@
 #include <poll.h>
 #include "Channel.hpp"
 #include "replies.hpp"
+#include <netinet/in.h>
 
 class Client;
 class Channel;

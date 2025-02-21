@@ -323,6 +323,18 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 	}
 }
 
+// bot
+
+void	bountyBot(Client &cleint, Client &bot, std::string &name) {
+	if (name == "LUFFY" || name == ":LUFFY")
+	{
+		std::cout << "not nickanme ::: " << bot.GetNickname() << std::endl;
+		cleint.SendMessage(":" + bot.GetNickname() + "!" + bot.GetUsername() + "@localhost"  +" PRIVMSG " + cleint.GetNickname() + " :" + "Luffy is worth 1,000,000,000 $" + "\r\n");
+	}
+	else if (name == "SHANKS" || name == ":SHANKS")
+		cleint.SendMessage(":" + bot.GetNickname() + "!" + bot.GetUsername() + "@localhost"  +" PRIVMSG " + cleint.GetNickname() + " :" + "SHANKS is worth 1,000,000,000 $" + "\r\n");
+}
+
 // PRIVMSG
 
 std::string concatMsg(std::vector<std::string>& args) {
@@ -370,7 +382,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			throw std::runtime_error(
 				ERR_NOSUCHNICK(irc_srv.getHostName(), clt.GetNickname(), args[1])
 			);
-		Channel *cltChannel = irc_srv.getChannel(args[1]) ;
+		Channel *cltChannel = irc_srv.getChannel(args[1]);
 
 		// not a valid channel
 		if (isChannel(args[1]) && cltChannel == NULL)
@@ -391,17 +403,23 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		if (!isChannel(args[1]) && checkconcatRealName(args[2])) {
         	recieverClient = getClientByNIck(args[1], clients);
         	recieverClient.SendMessage(":" + clt.GetNickname() + " PRIVMSG " + recieverClient.GetNickname() + " :" + concatMsg(args) + "\r\n");
+			if (args[1] == "BOUNTYBOT" || args[1] == ":BOUNTYBOT")
+				bountyBot(clt, recieverClient, args[2]);
 			return true;
 		}
 		else if (!isChannel(args[1])) {
         	recieverClient = getClientByNIck(args[1], clients);
 			recieverClient.SendMessage(":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost"  +" PRIVMSG " + recieverClient.GetNickname() + " :" + args[2] + "\r\n");
+			if (args[1] == "BOUNTYBOT" || args[1] == ":BOUNTYBOT")
+				bountyBot(clt, recieverClient, args[2]);
 			return true;
 		}
 		if (checkconcatRealName(args[2]))
 			cltChannel->brodcastMessage(irc_srv, clt.GetFd() ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + concatMsg(args) + "\r\n");
 		else
 			cltChannel->brodcastMessage(irc_srv, clt.GetFd() ,":" + clt.GetNickname() + " PRIVMSG " + args[1] + " :" + args[2] + "\r\n");
+		
+		
 		return true;
     } catch(const std::exception& e) {
         clt.SendMessage(e.what());
