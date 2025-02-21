@@ -5,3 +5,4 @@ remove client from channel when disconnected
 remove channel when all client have disconnected
 
 HANDEL :e2r7p11.1337.ma 441 SOEL joj #CH :They aren't on that channel WHEN THE CLIENT DISCONNECTED
+when removing the first operator you cant remove other _clients

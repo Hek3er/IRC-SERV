@@ -6,6 +6,10 @@
 bool    kickClient(Server& ss, Client& clt, Channel& working_ch ,std::string nick, std::string reason) {
     Client *target = NULL;
 
+    if (!working_ch.isMember(clt.GetFd())) {
+        clt.SendMessage(ERR_NOTONCHANNEL(ss.getHostName(), clt.GetNickname(), working_ch.getName()));
+        return false;
+    }
     target = ss.getClientByNick(nick);
     if (!target) {
         clt.SendMessage(ERR_NOSUCHNICK(ss.getHostName(), clt.GetNickname(), nick));
@@ -44,13 +48,16 @@ std::string getReason(std::vector<std::string> args) {
     }
     for (; i < args.size(); i++) {
         reason += args[i];
+        reason += " ";
     }
     return (reason);
 }
 
+
 void    kickCmd(Server& ss, Client& clt, std::vector<std::string> args) {
     Channel* working_ch;
     std::string reason;
+    std::vector<std::string> targets;
 
     if (args.size() < 3) {
         clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetNickname(), args[0]));
@@ -62,10 +69,9 @@ void    kickCmd(Server& ss, Client& clt, std::vector<std::string> args) {
         return; //ERR_NOSUCHCHANNEL 
     }
     reason  = getReason(args);
-    for (int i = 2; i < args.size(); i++) {
-        if (args[i] == ":" || args[i][0] == ':')
-            break;
-        if (!kickClient(ss, clt, *working_ch, args[i], (reason.size() > 1 ? reason.substr(1) : "")))
+    targets = split(args[2], ',');
+    for (int i = 0; i < targets.size(); i++) {
+        if (!kickClient(ss, clt, *working_ch, targets[i], (reason.size() > 1 ? reason.substr(1) : "")))
             break ;
     }
 }

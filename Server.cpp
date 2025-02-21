@@ -159,6 +159,7 @@ void Server::RunServer( void ) {
                             std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
                             close(this->_fds[i].fd);
                             bleachClient(this->_fds[i].fd);
+                            this->_clients.erase(this->_fds[i].fd);
                             this->_fds.erase(this->_fds.begin() + i);
                             continue;
                         } else if (res <0) {
