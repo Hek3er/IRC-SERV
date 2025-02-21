@@ -47,6 +47,24 @@ std::string boldGreeen(const std::string &str) {
 	return std::string("\033[1;32m") + str + "\033[0m";
 }
 
+void Server::bleachClient(int fd) {
+    for (int i = channels.size() - 1; i >= 0; i--) {
+        channels[i].removeMemeber(fd);
+        if (!channels[i].stillMemebers())
+            removeChannle(channels[i].getName());
+    }
+}
+
+void	Server::removeChannle(std::string name) {
+    for (int i = channels.size() - 1; i >= 0; i--) {
+        if (channels[i].getName() == name) {
+            channels.erase(channels.begin() + i);
+            std::cout << "channel removed\n";
+            break ;
+        }
+    }
+}
+
 void Server::RunServer( void ) {
 	// ⚠️ Maybe i should throw exceptions when error?
 
@@ -143,6 +161,8 @@ void Server::RunServer( void ) {
                         if (res == 0) {
                             std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
                             close(this->_fds[i].fd);
+                            bleachClient(this->_fds[i].fd);
+                            this->_clients.erase(this->_fds[i].fd);
                             this->_fds.erase(this->_fds.begin() + i);
                             continue;
                         } else if (res <0) {
@@ -167,6 +187,8 @@ void Server::RunServer( void ) {
                                     modeCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "TOPIC" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     topic_cmd(*this, _clients[this->_fds[i].fd], args);
+                                if (args[0] == "KICK" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                    kickCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "PRIVMSG" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     privmsg(*this, _clients[this->_fds[i].fd], this->_clients, args);
                             }

@@ -214,7 +214,7 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			args[1] = args[1].substr(1);
 		if (args.size() == 1 || args[1] == "")
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(clt.GetNickname(), args[0])
+				ERR_NEEDMOREPARAMS(irc_srv.getHostName() , clt.GetNickname(), args[0])
 			);
 		if (!findNickNameMatch(args[1], clients))
 			throw std::runtime_error(
@@ -303,11 +303,11 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			);
 		if (args.size() < 5)
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(clt.GetNickname(), "USER")
+				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), "USER")
 			);
 		if (!checkArgs(clt, args))
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(clt.GetNickname(), "USER")
+				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), "USER")
 			);
 		if (clt.getAuthLevel() == LEVEL(1))
 			clt.SetAuthLevel(2);
@@ -357,7 +357,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 	try {
 		if (args.size() == 1)
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(clt.GetNickname(), clt.GetNickname())
+				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), args[0])
 			);
         Client	recieverClient;
 		// valid nickname, no text
@@ -368,7 +368,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		// not a valide nickname and not a valid channel
         if (args.size() >= 2 && !isChannel(args[1]) && findNickNameMatch(args[1], clients))
 			throw std::runtime_error(
-				ERR_NOSUCHNICK(clt.GetNickname(), args[1])
+				ERR_NOSUCHNICK(irc_srv.getHostName(), clt.GetNickname(), args[1])
 			);
 		Channel *cltChannel = irc_srv.getChannel(args[1]) ;
 

@@ -36,6 +36,8 @@ public:
 	std::vector<struct pollfd>& getClientsFds( void );
 	std::string getHostName();
 	void	setHostName(std::string name);
+	void    bleachClient(int fd);
+	void	removeChannle(std::string name);
 
 private:
 	std::string			hostName;

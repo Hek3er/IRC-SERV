@@ -13,11 +13,11 @@ bool isMode(char c) {
 }
 
 void    splitModes(std::vector<std::string> &modes,const std::string& args) {
-    bool plus;
+    bool minus;
 
-    plus = (args[0] == '+');
+    minus = (args[0] == '-');
     for (int i = 1; i < args.length(); i++) {
-        modes.push_back(std::string(1, plus ? '+' : '-') + args[i]);
+        modes.push_back(std::string(1, minus ? '-' : '+') + args[i]);
     }
 }
 
@@ -42,7 +42,7 @@ void    getModes(std::vector<std::string> &modes,std::vector<std::string> &param
         splitModes(modes, args[i]);
     }
     else {
-         splitModes(modes, "-" + args[i]);
+         splitModes(modes, "+" + args[i]);
     }
     i++;
     for(; i < args.size(); i++) {
@@ -64,7 +64,7 @@ bool    checkForParameter(std::string &parameter, std::string& mode) {
 
 bool executeModes(Server& ss,Channel& ch, Client& clt, std::string &parameter, std::string& mode) {
     if (!checkForParameter(parameter, mode)) {
-        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "MODE"));
+        clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetUsername(), "MODE"));
         return false;
     }
 
@@ -82,44 +82,47 @@ bool executeModes(Server& ss,Channel& ch, Client& clt, std::string &parameter, s
     }
     if (mode == "+o" || mode == "-o") {
         Client *target = ss.getClientByNick(parameter);
-        if (!target)
+        if (!target) {
+            clt.SendMessage(ERR_NOSUCHNICK(ss.getHostName(), clt.GetNickname(), parameter));
             return false ; // Client doesnt exist!
+        }
+        if (!ch.isMember(target->GetFd())) {
+            clt.SendMessage(ERR_USERNOTINCHANNEL(ss.getHostName(), clt.GetNickname(), target->GetNickname(), ch.getName()));
+            return false;
+        }
         (mode[0] == '+') ? ch.addOp(target->GetFd()) : ch.removeOp(target->GetFd());
         return (true);
     }
     if (mode == "+l" || mode == "-l") {
-        std::cout<<"waaaaaa"<<parameter<<"\n";
         if (mode[0] == '+') {
             if (parameter.empty()) {
-                clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "MODE"));
+                clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetNickname(), "MODE"));
                 return false;
             }
             try {
                 size_t limit = std::stoull(parameter);
-                std::cout<<limit<<"\n";
                 ch.setLimitCondition(true);
                 ch.setlimit(limit);
             } catch (const std::invalid_argument& e) {
-                clt.SendMessage(ERR_INVALIDMODEPARAM(clt.GetUsername(), ch.getName(), mode, parameter));
+                clt.SendMessage(ERR_INVALIDMODEPARAM(ss.getHostName(), clt.GetNickname(), ch.getName(), mode, parameter));
                 return false;
             } catch (const std::out_of_range& e) {
-                clt.SendMessage(ERR_INVALIDMODEPARAM(clt.GetUsername(), ch.getName(), mode, parameter));
+                clt.SendMessage(ERR_INVALIDMODEPARAM(ss.getHostName(), clt.GetNickname(), ch.getName(), mode, parameter));
                 return false;
             }
         } 
         else {
             if (!parameter.empty()) {
-                clt.SendMessage(ERR_INVALIDMODEPARAM(clt.GetUsername(), ch.getName(), mode, parameter));
+                clt.SendMessage(ERR_INVALIDMODEPARAM(ss.getHostName(), clt.GetNickname(), ch.getName(), mode, parameter));
                 return false;
             }
             ch.setLimitCondition(false);
         }
         return true;
     }
-    clt.SendMessage(ERR_UNKNOWNMODE(clt.GetUsername(), mode[1]));
+    clt.SendMessage(ERR_UNKNOWNMODE(ss.getHostName(), clt.GetNickname(), mode[1]));
     return false;
 }
-
 
 
 void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
@@ -132,21 +135,22 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     Client* target_clt;
 
     if (args.size() == 1) {
-        clt.SendMessage(ERR_NEEDMOREPARAMS(clt.GetUsername(), "MODE"));
+        clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetNickname(), "MODE"));
         return ;
     }
     working_ch = ss.getChannel(args[1]);
     if (!working_ch) {
-        clt.SendMessage(ERR_NOSUCHCHANNEL(clt.GetUsername(), args[1]));
+        clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetNickname(), args[1]));
         return; //ERR_NOSUCHCHANNEL 
     }
     if (args.size() == 2) {
-        clt.SendMessage(RPL_CHANNELMODEIS(clt.GetNickname(), working_ch->getName(), working_ch->getModes().first, working_ch->getModes().second));
+        clt.SendMessage(RPL_CHANNELMODEIS(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getModes().first, working_ch->getModes().second));
+        clt.SendMessage(RPL_CREATIONTIME(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getChannelTime()));
         return ;
     }
 
     if (!working_ch->isOp(clt.GetFd())) {
-        clt.SendMessage(ERR_CHANOPRIVSNEEDED(clt.GetUsername(), working_ch->getName()));
+        clt.SendMessage(ERR_CHANOPRIVSNEEDED(ss.getHostName(), clt.GetNickname(), working_ch->getName()));
         return;
     }
     getModes(modes, parameters, args);
@@ -159,7 +163,7 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
         if (executeModes(ss, *working_ch, clt, mode_par_index[i].second, mode_par_index[i].first)) {
             std::string mode = mode_par_index[i].first;
             std::string args = mode_par_index[i].second;
-            working_ch->brodcastMode(ss, MODE_CHANGE_REPLY(clt.GetNickname(), clt.GetUsername(), "host", working_ch->getName(), mode, args));
+            working_ch->brodcastMode(ss, MODE_CHANGE_REPLY(clt.GetNickname(), clt.GetUsername(), ss.getHostName(), working_ch->getName(), mode, args));
         }
         else
             break ;

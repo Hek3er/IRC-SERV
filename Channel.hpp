@@ -21,6 +21,8 @@ class Channel {
         bool        invite_only;
         bool        topic_res;
         bool        is_Key_Protected;
+        std::string creation_time;
+        std::string topic_time;
         std::set<int> clients_fd;          // Store just fds
         std::set<int> operators_fd;
         std::set<int> inviteds_fd;
@@ -69,18 +71,27 @@ class Channel {
         bool isUserWelcomed(int fd);
 
         void printChannelInfo() const;
+        std::string addPrefix(Client& clt);
+
+        void    setTopicDate(std::string date);
+        std::string getTopicDate();
+        std::string getChannelTime();
 
         void broadcastJoin(Server& server, int joiner_fd);
         void brodcastMode(Server& server, std::string reply);
         void brodcastMessage(Server& server, int fd, std::string reply);
         void brodcastTopic(Server& server, std::string TopicReply);
 
+        bool stillMemebers();
+
 
 };
 
+std::string getTime(void);
 bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args);
 void    inviteCmd(Server& server,Client& clt, std::vector<std::string> args);
 void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args);
 void    topic_cmd(Server& ss, Client& clt, std::vector<std::string> args);
 bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args);
+void    kickCmd(Server& ss, Client& clt, std::vector<std::string> args);
 std::vector<std::string> split(std::string str, char del);
