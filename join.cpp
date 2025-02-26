@@ -13,11 +13,21 @@ int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
     }
     return (-1);
 }
+bool checkUpercase(std::string str) {
+    for (size_t i = 0; i < str.length(); i++) {
+        if (islower(str[i])) {
+            return false;
+        }
+    }
+    return true;
+}
 
 bool    joinChannel(Server& ss, const std::string& channel, const std::string& key, Client& clt)
 {
+    std::cout<<"CHANNEL:  "<<channel<<std::endl;
+    std::cout<<"KEY:  "<<key<<std::endl;
     std::vector<Channel>& ch_list = ss.getChannelList();
-    if (channel[0] != '#' && channel[0] != '&')
+    if (channel[0] != '#' && !checkUpercase(channel))
     {
         clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetNickname(), channel));
         return false;
@@ -66,8 +76,23 @@ bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args) {
     }
     
     channels = split(args[1], ','); 
-    if (args.size() > 2 && !args[2].empty())
-        keys = split(args[2], ',');
+    // if (args.size() > 2 && !args[2].empty())
+    //     keys = split(args[2], ',');
+
+    if (args.size() > 2) {
+        std::string keys_str = args[2];
+        size_t pos = 0;
+        std::string token;
+        
+        // Custom splitting to properly handle empty fields
+        while ((pos = keys_str.find(',')) != std::string::npos) {
+            token = keys_str.substr(0, pos);
+            keys.push_back(token); // This will push empty strings for empty fields
+            keys_str.erase(0, pos + 1);
+        }
+        keys.push_back(keys_str); // Push the last token
+    }
+
     for (int i = 0; i < channels.size(); i++) {
         std::string channel_key = (i < keys.size()) ? keys[i] : "";
         joinChannel(irc_srv, channels[i], channel_key, clt);
