@@ -100,7 +100,7 @@ void Server::RunServer( void ) {
         freeaddrinfo(res);
         return ;
     }
-    // setsockopt(this->_sockfd, )
+    setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, NULL, 1);
 	if (bind(this->_sockfd, res->ai_addr, res->ai_addrlen) == -1) {
 		std::cerr << "Coudn't bind the address" << std::endl;
         freeaddrinfo(res);
