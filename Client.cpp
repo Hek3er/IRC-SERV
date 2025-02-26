@@ -291,9 +291,6 @@ bool checkArgs(Client& clt, std::vector<std::string>& args) {
 		return false;
 	if (memcmp("*", args[3].c_str(), args[3].length()) != 0)
 		return false;
-	
-	clt.SetUsername("~" + args[1]);
-	clt.SetRealname(args[4]);
 
 	if (check)
 		clt.SetRealname(concatRealName(args));
@@ -317,11 +314,14 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			);
 		if (clt.getAuthLevel() == LEVEL(1))
 			clt.SetAuthLevel(2);
-		else if (clt.getAuthLevel() == LEVEL(2)) {
+		else if (clt.getAuthLevel() == LEVEL(2) && (clt.GetUsername()).empty() && (clt.getRealName()).empty()) {
 			clt.SetAuthLevel(3);
 			clt.SendMessage(WELCOME_REPLY(std::to_string(clt.GetFd()), clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
 		}
-		// std::cout << boldGreen("USER: ") << clt.GetUsername() << " 0 * " << clt.getRealName() << std::endl;
+		if (clt.getAuthLevel() != LEVEL(0)) {
+			clt.SetUsername("~" + args[1]);
+			clt.SetRealname(args[4]);
+		}
 		return true;
 	} catch (const std::exception& e) {
 		clt.SendMessage(e.what());

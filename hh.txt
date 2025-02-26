@@ -3,6 +3,6 @@ NICK reegl
 USER o 0 * e
 
 
-NICK change
+NICK change => done
 
 operator assign

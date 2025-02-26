@@ -32,9 +32,8 @@ std::vector<struct pollfd>& Server::getClientsFds( void ) {
 }
 
 void    Server::brodcastNick(std::string modeReply) {
-    for (std::vector<struct pollfd>::iterator it = (this->getClientsFds()).begin() + 2; it != (this->getClientsFds()).end(); ++it) {
+    for (std::vector<struct pollfd>::iterator it = (this->getClientsFds()).begin() + 3; it != (this->getClientsFds()).end(); ++it) {
         int fd = (*it).fd;
-        std::cout << "fd : " << fd << std::endl;
         this->SendMessage(fd, modeReply);
     }
 }
@@ -120,10 +119,13 @@ void Server::RunServer( void ) {
             return;
         }
 
+        int portInt;
+        std::stringstream portstream(this->GetPort());
+        portstream >> portInt;
         struct sockaddr_in serveraddr;
         memset(&serveraddr, 0, sizeof(serveraddr));
         serveraddr.sin_family = AF_INET;
-        serveraddr.sin_port = htons(6667);
+        serveraddr.sin_port = htons(portInt);
         inet_pton(sockfdBot ,"127.0.0.1", &serveraddr.sin_addr);
 
         if (connect(sockfdBot, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1) {
