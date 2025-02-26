@@ -60,6 +60,19 @@ void	Server::removeChannle(std::string name) {
     }
 }
 
+std::vector<std::string> split_new_line(std::string buffer) {
+    std::vector<std::string> result;
+    int pos;
+    int init = 0;
+    while ((pos = buffer.find('\n')) != std::string::npos) {
+        std::string tmp = buffer.substr(init, pos);
+        init = pos;
+        buffer.erase(buffer.begin() + init);
+        result.push_back(tmp);
+    }
+    return result;
+}
+
 void Server::RunServer( void ) {
 
 	struct addrinfo hints, *res;
@@ -202,7 +215,10 @@ void Server::RunServer( void ) {
                                 std::string buffer(this->_clients[this->_fds[i].fd].GetBuffer());
                                 std::cerr << boldGreeen("from client [") << std::to_string(this->_fds[i].fd) << boldGreeen("]") + " : " << buffer;
                                 
-                                std::vector<std::string> args = split(buffer, ' ');
+                                std::vector<std::string> strs = split_new_line(buffer);
+                                for (size_t j = 0; j < strs.size(); j++) {
+                                    std::cout << "str = " << strs[j] << std::endl;
+                                std::vector<std::string> args = split(strs[j], ' ');
                                 if (args[0] == "PASS")
                                     passCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "NICK" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
@@ -221,6 +237,7 @@ void Server::RunServer( void ) {
                                     kickCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "PRIVMSG" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
                                     privmsg(*this, _clients[this->_fds[i].fd], this->_clients, args);
+                            }
                             }
                         }
                     }
