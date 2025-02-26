@@ -66,14 +66,13 @@ void	Server::removeChannle(std::string name) {
 }
 
 void Server::RunServer( void ) {
-	// ⚠️ Maybe i should throw exceptions when error?
 
 	struct addrinfo hints, *res;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE; // fill my ip address automatically
+	hints.ai_flags = AI_PASSIVE;
 
 	int ret = getaddrinfo(NULL, _port.c_str(), &hints, &res);
 	if (ret < 0) {
@@ -81,27 +80,27 @@ void Server::RunServer( void ) {
 		return ;
 	}
 
-	// create a socket for the server (it listens for incomming connections only!)
 	this->_sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (this->_sockfd == -1) {
 		std::cerr << "Coudn't create a socket for the server" << std::endl;
+        freeaddrinfo(res);
 		return ;
 	}
 
     if (fcntl(this->_sockfd, F_SETFL, O_NONBLOCK) == -1) {
         std::cerr << "fcntl failed" << std::endl;
+        freeaddrinfo(res);
+        return ;
     }
-    // if (setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, NULL, 1) == -1) {
-    //     std::cerr << "setcockopt failed" << std::endl;
-    //     return ;
-    // }
 
 	if (bind(this->_sockfd, res->ai_addr, res->ai_addrlen) == -1) {
 		std::cerr << "Coudn't bind the address" << std::endl;
+        freeaddrinfo(res);
 		return ;
 	}
     if (listen(this->_sockfd, SOMAXCONN) == -1) {
     	std::cerr << "Coudn't listen" << std::endl;
+        freeaddrinfo(res);
     	return ;
     }
 
@@ -118,10 +117,10 @@ void Server::RunServer( void ) {
         fd.events = POLLIN;
         this->_fds.push_back(fd);
 
-        // ///// BOT
         int sockfdBot = socket(AF_INET, SOCK_STREAM, 0);
         if (sockfdBot == -1) {
             std::cerr << "Failed to create socket" << std::endl;
+            freeaddrinfo(res);
             return;
         }
 
@@ -133,6 +132,9 @@ void Server::RunServer( void ) {
 
         if (connect(sockfdBot, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1) {
             std::cerr << "Failed to connect the BOUNTYBOT" << std::endl;
+            freeaddrinfo(res);
+            close(sockfdBot);
+            return ;
         }
 
         Client bot;
@@ -150,26 +152,21 @@ void Server::RunServer( void ) {
         botfd.fd = sockfdBot;
         botfd.events = POLLIN;
         this->_fds.push_back(botfd);
-        
-        ///// END BOT
 
         while(1) {
             int client_fd;
-
-           	// i should change the params in accept (rn this is just a test)
 
             int ret = poll(this->_fds.data(), this->_fds.size(), 1000);
             if (ret == -1) {
                 std::cerr << "error in poll" << std::endl;
             }
 
-            for (int i = 0; i < this->_fds.size(); i++) {
+            for (size_t i = 0; i < this->_fds.size(); i++) {
                 if (this->_fds[i].revents & POLLIN) {
                     if (this->_fds[i].fd == this->_sockfd) {
-                        //new client
+
                         if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
                       		std::cout << "Coudn't accept" << std::endl;
-                      		// return ; // should be removed because the server shoudn't quit
                        	}
                         if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
                             std::cerr << "fcntl failed" << std::endl;
@@ -232,16 +229,9 @@ void Server::RunServer( void ) {
                 }
             }
         }
-    // }
 
-    	/*
-    	 * The idea rn is to get the information of the client the nickname then assign it to a client in the map
-    	 * since the map has a key of nickname we need to retrive the nickname and the information first;
-    	 *
-    	 * This is used so we can have instante lookup times when we need to make direct messages
-    	*/
-	// std::cout << "sockfd => " << this->_sockfd << " Clientfd => " << client_fd << std::endl;
 	freeaddrinfo(res);
+    close(sockfdBot);
 }
 void	Server::SendMessage( int client_fd, std::string message )  {
     if (_clients.find(client_fd) != _clients.end()) {
@@ -254,7 +244,6 @@ void	Server::SendMessage( int client_fd, std::string message )  {
 }
 
 Server::~Server() {
-    // should close _fds
 	(this->_sockfd == -1) ? : close(this->_sockfd);
 }
 
@@ -267,7 +256,7 @@ Client& Server::getClient(int fd) {
 }
 
 Channel* Server::getChannel(std::string channelName) {
-    for(int i = 0; i < channels.size(); i++) {
+    for(size_t i = 0; i < channels.size(); i++) {
         if (channels[i].getName() == channelName)
             return &channels[i];
     }

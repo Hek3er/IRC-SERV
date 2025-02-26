@@ -5,7 +5,7 @@
 
 int    channelExiste(std::vector<Channel>& ch_list, const std::string& channel)
 {
-    for (int i = 0; i < ch_list.size(); i++) {
+    for (size_t i = 0; i < ch_list.size(); i++) {
         if (ch_list[i].getName() == channel) {
             // std::cout<<"found channel\n";
             return (i);
@@ -68,7 +68,7 @@ bool    joinCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args) {
     channels = split(args[1], ','); 
     if (args.size() > 2 && !args[2].empty())
         keys = split(args[2], ',');
-    for (int i = 0; i < channels.size(); i++) {
+    for (size_t i = 0; i < channels.size(); i++) {
         std::string channel_key = (i < keys.size()) ? keys[i] : "";
         joinChannel(irc_srv, channels[i], channel_key, clt);
     }

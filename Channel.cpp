@@ -38,13 +38,11 @@ Channel::Channel(const Channel& cpy) :
     invite_only(cpy.invite_only),
     topic_res(cpy.topic_res),
     is_Key_Protected(cpy.is_Key_Protected),
+    creation_time(cpy.creation_time),
+    topic_time(cpy.topic_time),
     clients_fd(cpy.clients_fd),
     operators_fd(cpy.operators_fd),
-    inviteds_fd(cpy.inviteds_fd),
-    creation_time(cpy.creation_time),
-    topic_time(cpy.topic_time)
-{
-}
+    inviteds_fd(cpy.inviteds_fd) {}
 
 Channel& Channel::operator=(const Channel& other) {
     if (this != &other) {
@@ -272,7 +270,7 @@ std::vector<std::string> split(std::string str, char del) {
     std::vector<std::string> result;
     std::string temp = "";
     
-    for(int i = 0; i < str.length(); i++) {
+    for(size_t i = 0; i < str.length(); i++) {
         if(str[i] != del) {
             if(str[i] != '\r' && str[i] != '\n') {
                 temp += str[i];

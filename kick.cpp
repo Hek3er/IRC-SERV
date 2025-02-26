@@ -26,7 +26,6 @@ bool    kickClient(Server& ss, Client& clt, Channel& working_ch ,std::string nic
     else {
         working_ch.brodcastTopic(ss, KICK_REPLY(clt.GetNickname(), clt.GetUsername(), ss.getHostName(), working_ch.getName(), target->GetNickname(), (reason.empty() ? target->GetNickname() : reason)));
         working_ch.removeMemeber(target->GetFd());
-        //working_ch.removeOp(clt.GetFd());
         if (!working_ch.stillMemebers())
             ss.removeChannle(working_ch.getName());
     }
@@ -35,7 +34,7 @@ bool    kickClient(Server& ss, Client& clt, Channel& working_ch ,std::string nic
 
 std::string getReason(std::vector<std::string> args) {
     std::string reason = "";
-    int i = 2;
+    size_t i = 2;
     for (; i < args.size(); i++) {
         if (args[i] == ":" || args[i][0] == ':') {
             if (args[i][0] == ':')
@@ -66,11 +65,11 @@ void    kickCmd(Server& ss, Client& clt, std::vector<std::string> args) {
     working_ch = ss.getChannel(args[1]);
     if (!working_ch) {
         clt.SendMessage(ERR_NOSUCHCHANNEL(ss.getHostName(), clt.GetNickname(), args[1]));
-        return; //ERR_NOSUCHCHANNEL 
+        return;
     }
     reason  = getReason(args);
     targets = split(args[2], ',');
-    for (int i = 0; i < targets.size(); i++) {
+    for (size_t i = 0; i < targets.size(); i++) {
         if (!kickClient(ss, clt, *working_ch, targets[i], (reason.size() > 1 ? reason.substr(1) : "")))
             break ;
     }

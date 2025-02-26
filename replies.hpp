@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#define WELCOME_REPLY(fd, nick, ipaddress, username, hostName) ": 001 " + nick + " :Welcome to IRC SERVER " +  "!" + username + "@" + hostName + "\r\n"
+#define WELCOME_REPLY(fd, nick, ipaddress, username, hostName) ": 001 " + nick + " :Welcome to IRC SERVER " + nick + "!" + username + "@" + hostName + "\r\n"
 #define JOIN_REPLY(nick, username, channelname, ipaddress) ":" + nick + "!" + username + "@" + ipaddress + " JOIN " + channelname + "\r\n"
 
 #define INVITE_REPLY(client, invited_user, ipadress, nickname, channel) ":" + client + "!" + invited_user + "@" + ipadress + " INVITE " + nickname + " " + channel + "\r\n"
@@ -36,19 +36,19 @@
 #define RPL_INVITING(server, client, nick, channel) ":" + server + " 341 " + client + " " + nick + " " + channel + "\r\n"
 
 // PASS
-#define ERR_ALREADYREGISTERED(client) "462 " + client + " :You may not reregister\r\n"
-#define ERR_PASSWDMISMATCH(client) "464 " + client + " :Password incorrect\r\n"
+#define ERR_ALREADYREGISTERED(server, client) ":" + server + "462 " + client + " :You may not reregister\r\n"
+#define ERR_PASSWDMISMATCH(server, client) ":" + server + "464 " + client + " :Password incorrect\r\n"
 
 // NICK
 
-#define ERR_ERRONEUSNICKNAME(client, nick) "432 " + client + " " + nick + " :Erroneus nickname\r\n"
-#define ERR_NONICKNAMEGIVEN(client) "431 " + client + " :No nickname given\r\n"
-#define ERR_NICKNAMEINUSE(client, nick) "433 " + client + " " + nick + " :Nickname is already in use\r\n"
-#define ERR_NICKCOLLISION(client, nick) "436 " + client + " " + nick + " :Nickname collision KILL from <user>@<host>\r\n"
+#define ERR_ERRONEUSNICKNAME(server, client, nick) ":" + server + "432 " + client + " " + nick + " :Erroneus nickname\r\n"
+#define ERR_NONICKNAMEGIVEN(server, client) ":" + server + "431 " + client + " :No nickname given\r\n"
+#define ERR_NICKNAMEINUSE(server, client, nick) ":" + server + "433 " + client + " " + nick + " :Nickname is already in use\r\n"
+#define ERR_NICKCOLLISION(server, client, nick) ":" + server + "436 " + client + " " + nick + " :Nickname collision KILL from <user>@<host>\r\n"
 #define ERR_INVALIDMODEPARAM(server, client, channel, mode, parameter) ":" + server + " 696 " + client + " " + channel + " " + mode + " " + parameter + " :Invalid mode parameter\r\n"
 
 //PRIVMSG
-#define ERR_CANNOTSENDTOCHAN(client, channel) "404 " + client + " " + channel + " :" + ":Cannot send to channel\r\n"
-#define ERR_NORECIPIENT(client, command) "411 " + client + " :" + ":No recipient given " + "(<" command + ">)" + "\r\n"
-#define ERR_NOTEXTTOSEND(client, command) "412 " + client + " :" + ":No text to send\r\n"
+#define ERR_CANNOTSENDTOCHAN(server, client, channel) ":" + server + "404 " + client + " " + channel + " :" + ":Cannot send to channel\r\n"
+#define ERR_NORECIPIENT(server, client, command) ":" + server + "411 " + client + " :" + ":No recipient given " + "(<" command + ">)" + "\r\n"
+#define ERR_NOTEXTTOSEND(server, client, command) ":" + server + "412 " + client + " :" + ":No text to send\r\n"
 

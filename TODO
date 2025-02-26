@@ -1,1 +1,0 @@
-1- CheckNickname function in client should implement and check characters based on the irc reference and some in the irc doc are not yet implemented [They MUST NOT start with a character listed as a channel type, channel membership prefix, or prefix listed in the IRCv3 multi-prefix Extension.]

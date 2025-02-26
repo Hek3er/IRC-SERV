@@ -138,22 +138,23 @@ bool	passCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 	try {
 		if (clt.getAuthLevel() != LEVEL(0))
 			throw std::runtime_error(
-				ERR_ALREADYREGISTERED(clt.GetNickname())
+				ERR_ALREADYREGISTERED(irc_srv.getHostName(), clt.GetNickname())
 			);
 		if (args.size() == 1)
 			throw std::runtime_error(
-				ERR_PASSWDMISMATCH(clt.GetNickname())
+				ERR_PASSWDMISMATCH(irc_srv.getHostName(), clt.GetNickname())
 			);
 		if ( ((irc_srv.GetPassword()).size() != args[1].size()) || \
 			(memcmp(irc_srv.GetPassword().c_str(), args[1].c_str(), irc_srv.GetPassword().length()) != 0))
 			throw std::runtime_error(
-				ERR_PASSWDMISMATCH(clt.GetNickname())
+				ERR_PASSWDMISMATCH(irc_srv.getHostName(), clt.GetNickname())
 			);
 		clt.SetAuthLevel(1);
 	} catch (const std::exception& e) {
 		clt.SendMessage(e.what());
 		return false;
 	}
+	return true;
 }
 
 //NICK
@@ -219,11 +220,11 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			);
 		if (!findNickNameMatch(args[1], clients))
 			throw std::runtime_error(
-				ERR_NICKNAMEINUSE(clt.GetNickname(), args[1])
+				ERR_NICKNAMEINUSE(irc_srv.getHostName(), clt.GetNickname(), args[1])
 			);
 		if (!CheckNickname(args[1]))
 			throw std::runtime_error(
-				ERR_ERRONEUSNICKNAME(clt.GetNickname(), clt.GetNickname())
+				ERR_ERRONEUSNICKNAME(irc_srv.getHostName(), clt.GetNickname(), clt.GetNickname())
 			);
 		if (clt.GetNickname() != "")
 			alreadyseted = true;
@@ -277,7 +278,6 @@ std::string concatRealName(std::vector<std::string>& args) {
 bool checkArgs(Client& clt, std::vector<std::string>& args) {
 	int check;
 	check = 0;
-	int	count = 0;
 	if (args[1].empty() || args[2].empty() || args[3].empty() || args[4].empty())
 		return false;
 	if (checkconcatRealName(args[4]))
@@ -300,7 +300,7 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 	try {
 		if (clt.getAuthLevel() == LEVEL(3))
 			throw std::runtime_error(
-				ERR_ALREADYREGISTERED(clt.GetNickname())
+				ERR_ALREADYREGISTERED(irc_srv.getHostName(), clt.GetNickname())
 			);
 		if (args.size() < 5)
 			throw std::runtime_error(
@@ -391,7 +391,7 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
         Client	recieverClient;
         if (args.size() == 2 && !isChannel(args[1]) && !findNickNameMatch(args[1], clients))
             throw std::runtime_error(
-                ERR_NOTEXTTOSEND(clt.GetNickname(), args[0])
+                ERR_NOTEXTTOSEND(irc_srv.getHostName(), clt.GetNickname(), args[0])
             );
 
         if (args.size() >= 2 && !isChannel(args[1]) && findNickNameMatch(args[1], clients))
@@ -405,17 +405,17 @@ bool	privmsg(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		
 		if (isChannel(args[1]) && cltChannel == NULL)
 			throw std::runtime_error(
-                ERR_CANNOTSENDTOCHAN(clt.GetNickname(), args[1])
+                ERR_CANNOTSENDTOCHAN(irc_srv.getHostName(), clt.GetNickname(), args[1])
             );
 		
 		if (isChannel(args[1]) && cltChannel != NULL && !cltChannel->isMember(clt.GetFd()))
 			throw std::runtime_error(
-                ERR_CANNOTSENDTOCHAN(clt.GetNickname(), args[1])
+                ERR_CANNOTSENDTOCHAN(irc_srv.getHostName(), clt.GetNickname(), args[1])
             );
 		
 		if (args.size() == 2 && isChannel(args[1]) && cltChannel != NULL && cltChannel->isMember(clt.GetFd()))
 			throw std::runtime_error(
-                ERR_NOTEXTTOSEND(clt.GetNickname(), args[0])
+                ERR_NOTEXTTOSEND(irc_srv.getHostName(), clt.GetNickname(), args[0])
             );
 
 		if (!isChannel(args[1]) && checkconcatRealName(args[2])) {

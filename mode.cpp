@@ -16,14 +16,14 @@ void    splitModes(std::vector<std::string> &modes,const std::string& args) {
     bool minus;
 
     minus = (args[0] == '-');
-    for (int i = 1; i < args.length(); i++) {
+    for (size_t i = 1; i < args.length(); i++) {
         modes.push_back(std::string(1, minus ? '-' : '+') + args[i]);
     }
 }
 
 void    indexParameters(std::vector<std::string> &modes,std::vector<std::string> &parameters, std::vector<std::pair<std::string, std::string> >& mode_par_index) {
-    int index = 0;
-    for (int i = 0; i < modes.size(); i++) {
+    size_t index = 0;
+    for (size_t i = 0; i < modes.size(); i++) {
         if (modes[i] == "+k" || modes[i] == "+o" || modes[i] == "-o" || modes[i] == "+l")
         {
             if (index < parameters.size())
@@ -37,7 +37,7 @@ void    indexParameters(std::vector<std::string> &modes,std::vector<std::string>
 }
 
 void    getModes(std::vector<std::string> &modes,std::vector<std::string> &parameters, std::vector<std::string> &args) {
-    int i = 2;
+    size_t i = 2;
     if (args[i][0] == '+' || args[i][0] == '-') {
         splitModes(modes, args[i]);
     }
@@ -51,7 +51,7 @@ void    getModes(std::vector<std::string> &modes,std::vector<std::string> &param
 }
 
 void    printargs(std::vector<std::pair<std::string, std::string> >& mode_par_index) {
-    for (int i = 0; i < mode_par_index.size(); i++) {
+    for (size_t i = 0; i < mode_par_index.size(); i++) {
         std::cout<< mode_par_index[i].first << "   " << mode_par_index[i].second << "\n";
     }
 }
@@ -132,7 +132,6 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     std::vector<std::pair<std::string, std::string> > mode_par_index;
 
     Channel* working_ch;
-    Client* target_clt;
 
     if (args.size() == 1) {
         clt.SendMessage(ERR_NEEDMOREPARAMS(ss.getHostName(), clt.GetNickname(), "MODE"));
@@ -159,7 +158,7 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     if (modes.size() == 0) {
         return ; // ERR_UMODEUNKNOWNFLAG
     }
-    for (int i = 0; i < mode_par_index.size(); i++) {
+    for (size_t i = 0; i < mode_par_index.size(); i++) {
         if (executeModes(ss, *working_ch, clt, mode_par_index[i].second, mode_par_index[i].first)) {
             std::string mode = mode_par_index[i].first;
             std::string args = mode_par_index[i].second;
