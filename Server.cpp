@@ -31,16 +31,12 @@ std::vector<struct pollfd>& Server::getClientsFds( void ) {
     return (this->_fds);
 }
 
-void    Server::broadcastNick(int fd, std::string nickReply) {
-    bool LocalSend = true;
-    for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
-        if (it->isMember(fd)) {
-            it->brodcastMode(*this, nickReply);
-            LocalSend = false;
-        }
+void    Server::brodcastNick(std::string modeReply) {
+    for (std::vector<struct pollfd>::iterator it = (this->getClientsFds()).begin() + 2; it != (this->getClientsFds()).end(); ++it) {
+        int fd = (*it).fd;
+        std::cout << "fd : " << fd << std::endl;
+        this->SendMessage(fd, modeReply);
     }
-    if (LocalSend)
-        this->SendMessage(fd, nickReply);
 }
 
 std::string boldGreeen(const std::string &str) {
@@ -92,7 +88,7 @@ void Server::RunServer( void ) {
         freeaddrinfo(res);
         return ;
     }
-
+    // setsockopt(this->_sockfd, )
 	if (bind(this->_sockfd, res->ai_addr, res->ai_addrlen) == -1) {
 		std::cerr << "Coudn't bind the address" << std::endl;
         freeaddrinfo(res);

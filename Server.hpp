@@ -35,6 +35,7 @@ public:
 	Client*	getClientByNick(std::string nick);
 	Client& getClient(int fd);
 	std::vector<struct pollfd>& getClientsFds( void );
+	void    brodcastNick(std::string modeReply);
 	std::string getHostName();
 	void	setHostName(std::string name);
 	void    bleachClient(int fd);
