@@ -1,0 +1,8 @@
+PASS pass
+NICK reegl
+USER o 0 * e
+
+
+NICK change
+
+operator assign
