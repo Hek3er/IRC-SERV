@@ -208,7 +208,6 @@ bool checkconcatRealName(std::string &real_name) {
 bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args)
 {
 	try {
-		bool alreadyseted = false;
 		if (args.size() != 1 && checkconcatRealName(args[1]))
 			args[1] = args[1].substr(1);
 		if (args.size() == 1 || args[1] == "")
@@ -223,8 +222,6 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			throw std::runtime_error(
 				ERR_ERRONEUSNICKNAME(irc_srv.getHostName(), clt.GetNickname(), clt.GetNickname())
 			);
-		if (clt.GetNickname() != "")
-			alreadyseted = true;
 		
 		if (clt.getAuthLevel() == LEVEL(3))
 		{

@@ -69,6 +69,24 @@ std::vector<std::string> split_new_line(std::string buffer) {
         }
         buffer.erase(0, pos + 1);
     }
+    if (!buffer.empty()) {
+        result.push_back(buffer);
+    }
+    return result;
+}
+
+std::vector<std::string> split_space(std::string buffer) {
+    std::vector<std::string> result;
+    int pos;
+    while ((pos = buffer.find(' ')) != std::string::npos) {
+        std::string tmp = buffer.substr(0, pos);
+        result.push_back(tmp);
+        buffer.erase(0, pos + 1);
+    }
+
+    if (!buffer.empty()) {
+        result.push_back(buffer);
+    }
     return result;
 }
 
@@ -232,7 +250,10 @@ void Server::RunServer( void ) {
                                 
                                 std::vector<std::string> strs = split_new_line(buffer);
                                 for (size_t j = 0; j < strs.size(); j++) {
-                                    std::vector<std::string> args = split(strs[j], ' ');
+                                    std::vector<std::string> args = split_space(strs[j]);
+                                    if (args.size() == 0) {
+                                        continue;
+                                    }
                                     if (args[0] == "PASS")
                                         passCmd(*this, _clients[this->_fds[i].fd], args);
                                     if (args[0] == "NICK" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
