@@ -134,12 +134,6 @@ void Server::RunServer( void ) {
             return;
         }
 
-        if (fcntl(sockfdBot, F_SETFL, O_NONBLOCK) == -1) {
-            std::cerr << "fcntl failed" << std::endl;
-            close(sockfdBot);
-            freeaddrinfo(res);
-            return ;
-        }
 
         int portInt;
         std::stringstream portstream(this->GetPort());
@@ -159,6 +153,13 @@ void Server::RunServer( void ) {
             std::cerr << "Failed to connect the BOUNTYBOT" << std::endl;
             freeaddrinfo(res);
             close(sockfdBot);
+            return ;
+        }
+        
+        if (fcntl(sockfdBot, F_SETFL, O_NONBLOCK) == -1) {
+            std::cerr << "fcntl failed" << std::endl;
+            close(sockfdBot);
+            freeaddrinfo(res);
             return ;
         }
 
