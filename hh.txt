@@ -1,8 +1,3 @@
-PASS pass
+PASS 123
 NICK reegl
 USER o 0 * e
-
-
-NICK change => done
-
-operator assign

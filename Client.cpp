@@ -331,29 +331,29 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 
 // bot
 
-void	bountyBot(Client &cleint, Client &bot, std::string &name) {
+void	bountyBot(Client &client, Client &bot, std::string &name) {
 	if (name == "LUFFY" || name == ":LUFFY")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "Luffy 👊🏻 is worth 3,000,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "Luffy 👊🏻 is worth 3,000,000,000 💰"));
 	else if (name == "NAMI" || name == ":NAMI")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "NAMI 👙 is worth 366,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "NAMI 👙 is worth 366,000,000 💰"));
 	else if (name == "USSOP" || name == ":USSOP")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "USSOP 🎯 is worth 500,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "USSOP 🎯 is worth 500,000,000 💰"));
 	else if (name == "SANJI" || name == ":SANJI")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "SANJI 🦵 is worth 1,032,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "SANJI 🦵 is worth 1,032,000,000 💰"));
 	else if (name == "ZORO" || name == ":ZORO")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "ZORO ⚔️ is worth 1,111,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "ZORO ⚔️ is worth 1,111,000,000 💰"));
 	else if (name == "ROBIN" || name == ":ROBIN")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "ROBIN 👢 is worth 930,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "ROBIN 👢 is worth 930,000,000 💰"));
 	else if (name == "CHOPPER" || name == ":CHOPPER")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "CHOPPER 🧸ྀི is worth 1,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "CHOPPER 🧸ྀི is worth 1,000 💰"));
 	else if (name == "FRANKY" || name == ":FRANKY")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "FRANKY 🤖 is worth 394,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "FRANKY 🤖 is worth 394,000,000 💰"));
 	else if (name == "BROOK" || name == ":BROOK")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "BROOK 💀 is worth 383,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "BROOK 💀 is worth 383,000,000 💰"));
 	else if (name == "JINBE" || name == ":JINBE")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "JINBE 🌊 is worth 1,100,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "JINBE 🌊 is worth 1,100,000,000 💰"));
 	else
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "this bot is only for Straw Hat 👒🏴‍☠️☠🍖"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "this bot is only for Straw Hat 👒🏴‍☠️☠🍖"));
 }
 
 // PRIVMSG
