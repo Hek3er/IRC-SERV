@@ -112,12 +112,7 @@ void Client::StoreBuffer( char *str, int size ) {
 			this->_buffer += str[i];
 		}
 	}
-
-    if (str[size - 1] != '\n') {
-        this->_messageCompleted = false;
-    } else {
-        this->_messageCompleted = true;
-    }
+	this->_messageCompleted = true;
 }
 
 bool Client::IsBufferReady( void ) const {
