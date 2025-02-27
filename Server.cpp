@@ -5,10 +5,7 @@
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "stdlib.h"
-#include "stdio.h"
 #include <fcntl.h>
-
 
 std::map<int, Client> Server::_clients;
 std::vector<struct pollfd> Server::_fds;
@@ -63,12 +60,14 @@ void	Server::removeChannle(std::string name) {
 std::vector<std::string> split_new_line(std::string buffer) {
     std::vector<std::string> result;
     int pos;
-    int init = 0;
     while ((pos = buffer.find('\n')) != std::string::npos) {
-        std::string tmp = buffer.substr(init, pos);
-        init = pos;
-        buffer.erase(buffer.begin() + init);
+        std::string tmp = buffer.substr(0, pos);
         result.push_back(tmp);
+        
+        if (buffer[pos] == '\r' && pos + 1 < buffer.length() && buffer[pos + 1] == '\n') {
+            pos++;
+        }
+        buffer.erase(0, pos + 1);
     }
     return result;
 }
@@ -100,7 +99,10 @@ void Server::RunServer( void ) {
         freeaddrinfo(res);
         return ;
     }
-    setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, NULL, 1);
+    
+    int opt = 1;
+    setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
 	if (bind(this->_sockfd, res->ai_addr, res->ai_addrlen) == -1) {
 		std::cerr << "Coudn't bind the address" << std::endl;
         freeaddrinfo(res);
@@ -139,7 +141,12 @@ void Server::RunServer( void ) {
         memset(&serveraddr, 0, sizeof(serveraddr));
         serveraddr.sin_family = AF_INET;
         serveraddr.sin_port = htons(portInt);
-        inet_pton(sockfdBot ,"127.0.0.1", &serveraddr.sin_addr);
+        if (inet_pton(AF_INET ,"127.0.0.1", &serveraddr.sin_addr) <= 0) {
+            std::cerr << "Failed to set address to bot sockaddr" << std::endl;
+            freeaddrinfo(res);
+            close(sockfdBot);
+            return ;
+        }
 
         if (connect(sockfdBot, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1) {
             std::cerr << "Failed to connect the BOUNTYBOT" << std::endl;
@@ -177,7 +184,7 @@ void Server::RunServer( void ) {
                     if (this->_fds[i].fd == this->_sockfd) {
 
                         if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
-                      		std::cout << "Coudn't accept" << std::endl;
+                      		std::cerr << "Coudn't accept" << std::endl;
                        	}
                         if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
                             std::cerr << "fcntl failed" << std::endl;
@@ -213,39 +220,39 @@ void Server::RunServer( void ) {
                         } else {
                             if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
                                 std::string buffer(this->_clients[this->_fds[i].fd].GetBuffer());
-                                std::cerr << boldGreeen("from client [") << std::to_string(this->_fds[i].fd) << boldGreeen("]") + " : " << buffer;
+                                std::cout << boldGreeen("from client [") << std::to_string(this->_fds[i].fd) << boldGreeen("]") + " : " << buffer;
                                 
                                 std::vector<std::string> strs = split_new_line(buffer);
                                 for (size_t j = 0; j < strs.size(); j++) {
-                                    std::cout << "str = " << strs[j] << std::endl;
-                                std::vector<std::string> args = split(strs[j], ' ');
-                                if (args[0] == "PASS")
-                                    passCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "NICK" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
-                                    nickCmd(*this, _clients[this->_fds[i].fd], this->_clients, args);
-                                if (args[0] == "USER" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
-                                    userCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "JOIN" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
-                                    joinCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "INVITE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
-                                    inviteCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "MODE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
-                                    modeCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "TOPIC" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
-                                    topic_cmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "KICK" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
-                                    kickCmd(*this, _clients[this->_fds[i].fd], args);
-                                if (args[0] == "PRIVMSG" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
-                                    privmsg(*this, _clients[this->_fds[i].fd], this->_clients, args);
-                            }
+                                    std::vector<std::string> args = split(strs[j], ' ');
+                                    if (args[0] == "PASS")
+                                        passCmd(*this, _clients[this->_fds[i].fd], args);
+                                    if (args[0] == "NICK" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
+                                        nickCmd(*this, _clients[this->_fds[i].fd], this->_clients, args);
+                                    if (args[0] == "USER" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
+                                        userCmd(*this, _clients[this->_fds[i].fd], args);
+                                    if (args[0] == "JOIN" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                        joinCmd(*this, _clients[this->_fds[i].fd], args);
+                                    if (args[0] == "INVITE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                        inviteCmd(*this, _clients[this->_fds[i].fd], args);
+                                    if (args[0] == "MODE" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                        modeCmd(*this, _clients[this->_fds[i].fd], args);
+                                    if (args[0] == "TOPIC" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                        topic_cmd(*this, _clients[this->_fds[i].fd], args);
+                                    if (args[0] == "KICK" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                        kickCmd(*this, _clients[this->_fds[i].fd], args);
+                                    if (args[0] == "PRIVMSG" && _clients[this->_fds[i].fd].getAuthLevel() == LEVEL(3))
+                                        privmsg(*this, _clients[this->_fds[i].fd], this->_clients, args);
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
-	freeaddrinfo(res);
+    if (res != NULL) {
+	    freeaddrinfo(res);
+    }
     close(sockfdBot);
 }
 void	Server::SendMessage( int client_fd, std::string message )  {
@@ -260,6 +267,9 @@ void	Server::SendMessage( int client_fd, std::string message )  {
 
 Server::~Server() {
 	(this->_sockfd == -1) ? : close(this->_sockfd);
+    for (size_t i = 0; i < this->_fds.size(); i++) {
+        close(this->_fds[i].fd);
+    }
 }
 
 //added by Soufiane:
