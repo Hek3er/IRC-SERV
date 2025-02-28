@@ -300,7 +300,7 @@ void	Server::SendMessage( int client_fd, std::string message )  {
 
 Server::~Server() {
 
-    std::cout << "Server is closed" << std::endl;
+    std::cout << std::endl <<  "Server is closed" << std::endl;
 	(this->_sockfd == -1) ? : close(this->_sockfd);
     for (size_t i = 0; i < this->_fds.size(); i++) {
         if (this->_fds[i].fd != -1) {
