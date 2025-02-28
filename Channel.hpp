@@ -55,7 +55,7 @@ class Channel {
         void    setTopic(std::string newTopic);
         void    setTopicChanger(int fd);
         
-        std::pair<std::string, std::string> getModes();
+        std::pair<std::string, std::string> getModes(int fd);
         std::string getName();
         std::string getTopic();
         std::string getKey();

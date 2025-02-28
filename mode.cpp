@@ -143,7 +143,7 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
         return; //ERR_NOSUCHCHANNEL 
     }
     if (args.size() == 2) {
-        clt.SendMessage(RPL_CHANNELMODEIS(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getModes().first, working_ch->getModes().second));
+        clt.SendMessage(RPL_CHANNELMODEIS(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getModes(clt.GetFd()).first, working_ch->getModes(clt.GetFd()).second));
         clt.SendMessage(RPL_CREATIONTIME(ss.getHostName(), clt.GetNickname(), working_ch->getName(), working_ch->getChannelTime()));
         return ;
     }

@@ -109,13 +109,17 @@ bool    Channel::isOp(int fd) {
 //     return (operators.find(nickname) != operators.end());
 // }
 
-std::pair<std::string, std::string> Channel::getModes() {
+std::pair<std::string, std::string> Channel::getModes(int fd) {
     std::string modes = "+";
     std::string args = "";
     
     if (is_Key_Protected) {
         modes += "k";
-        args += "*";
+        if (isMember(fd)) {
+            args += getKey();
+        }
+        else
+            args += "*";
     }
     if (invite_only) {
         modes += "i";
@@ -125,11 +129,13 @@ std::pair<std::string, std::string> Channel::getModes() {
     }
     if (user_limit) {
         modes += "l";
-        if (!args.empty()) args += " ";
-        std::stringstream ss(getLimit());
-        std::string limit;
-        ss >> limit;
-        args += limit;
+        if (!args.empty()) 
+            args += " ";
+        args += std::to_string(getLimit());
+        // std::stringstream ss(getLimit());
+        // std::string limit;
+        // ss >> limit;
+        //args += limit;
     }
     
     if (modes == "+")
