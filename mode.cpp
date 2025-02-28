@@ -154,7 +154,7 @@ void    modeCmd(Server& ss, Client &clt, std::vector<std::string>& args) {
     }
     getModes(modes, parameters, args);
     indexParameters(modes, parameters, mode_par_index);
-    printargs(mode_par_index);
+    //printargs(mode_par_index);
     if (modes.size() == 0) {
         return ; // ERR_UMODEUNKNOWNFLAG
     }

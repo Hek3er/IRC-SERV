@@ -264,7 +264,6 @@ std::string Channel::getChannelTime() {
 
 bool Channel::stillMemebers() {
     if (!clients_fd.empty()) {
-        std::cout<<"ba9i 3amra\n";
         return true;
     }
     return false;

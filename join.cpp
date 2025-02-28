@@ -24,8 +24,6 @@ bool checkUpercase(std::string str) {
 
 bool    joinChannel(Server& ss, const std::string& channel, const std::string& key, Client& clt)
 {
-    std::cout<<"CHANNEL:  "<<channel<<std::endl;
-    std::cout<<"KEY:  "<<key<<std::endl;
     std::vector<Channel>& ch_list = ss.getChannelList();
     if (channel[0] != '#' || !checkUpercase(channel))
     {

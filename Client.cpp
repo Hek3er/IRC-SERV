@@ -228,8 +228,10 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		} else if (clt.getAuthLevel() == LEVEL(1)) {
 			clt.SetAuthLevel(2);
 			clt.SetNickname(args[1]);
-		} else if (clt.getAuthLevel() == LEVEL(2)) {
+		} else if (clt.getAuthLevel() == LEVEL(2) && (clt.GetNickname()).empty()) {
+			clt.SetAuthLevel(3);
 			clt.SetNickname(args[1]);
+			clt.SendMessage(WELCOME_REPLY(fd, clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
 		}
 		return true;
 	
@@ -297,7 +299,11 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), "USER")
 			);
 		
-		if (clt.getAuthLevel() == LEVEL(2)) {
+		if (clt.getAuthLevel() == LEVEL(1)) {
+			clt.SetAuthLevel(2);
+			clt.SetUsername("~" + args[1]);
+			clt.SetRealname(args[4]);
+		} else if (clt.getAuthLevel() == LEVEL(2) && (clt.GetUsername()).empty() && (clt.getRealName()).empty()) {
 			clt.SetAuthLevel(3);
 			std::stringstream ss(clt.GetFd());
 			std::string fd;
@@ -306,6 +312,10 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			clt.SetRealname(args[4]);
 			clt.SendMessage(WELCOME_REPLY(fd, clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
 			return true;
+		} else if (clt.getAuthLevel() == LEVEL(2) && !(clt.GetUsername()).empty() && !(clt.getRealName()).empty()) {
+			throw std::runtime_error(
+				ERR_ALREADYREGISTERED(irc_srv.getHostName(), clt.GetNickname())
+			);
 		}
 		return true;
 	} catch (const std::exception& e) {

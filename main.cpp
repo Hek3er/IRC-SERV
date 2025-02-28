@@ -33,7 +33,8 @@ void    checkPassword(std::string& password) {
 }
 
 int main( int ac, char **av ) {
-
+    
+    signal(SIGPIPE, SIG_IGN);
     if (ac != 3) {
         std::cerr << "Usage : ./ircserv <port> <password>" << std::endl;
         return 1;
