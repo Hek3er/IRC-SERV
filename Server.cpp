@@ -1,14 +1,11 @@
-#include "Server.hpp"
+	#include "Server.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
 #include <netdb.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "stdlib.h"
-#include "stdio.h"
 #include <fcntl.h>
-
 
 std::map<int, Client> Server::_clients;
 std::vector<struct pollfd> Server::_fds;
@@ -60,6 +57,32 @@ void	Server::removeChannle(std::string name) {
     }
 }
 
+std::vector<std::string> split_new_line(std::string buffer) {
+    std::vector<std::string> result;
+    char *tock = strtok((char *)buffer.c_str(), "\r\n");
+    while (tock  != NULL) {
+        std::string tmp = std::string(tock);
+        result.push_back(tmp);
+        tock = strtok(NULL, "\r\n");
+    }
+    return result;
+}
+
+std::vector<std::string> split_space(std::string buffer) {
+    std::vector<std::string> result;
+    size_t pos;
+    while ((pos = buffer.find(' ')) != std::string::npos) {
+        std::string tmp = buffer.substr(0, pos);
+        result.push_back(tmp);
+        buffer.erase(0, pos + 1);
+    }
+
+    if (!buffer.empty()) {
+        result.push_back(buffer);
+    }
+    return result;
+}
+
 void Server::RunServer( void ) {
 
 	struct addrinfo hints, *res;
@@ -87,7 +110,10 @@ void Server::RunServer( void ) {
         freeaddrinfo(res);
         return ;
     }
-    // setsockopt(this->_sockfd, )
+    
+    int opt = 1;
+    setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
 	if (bind(this->_sockfd, res->ai_addr, res->ai_addrlen) == -1) {
 		std::cerr << "Coudn't bind the address" << std::endl;
         freeaddrinfo(res);
@@ -99,110 +125,125 @@ void Server::RunServer( void ) {
     	return ;
     }
 
+    char ad[1024] = {0};
+    gethostname(ad, sizeof(ad));
+    hostName = std::string(ad);
+    std::cout << "Server Waiting for connections..." << ad << " " << this->_port << std::endl;
 
-        char ad[1024] = {0};
-        gethostname(ad, sizeof(ad));
-        hostName = std::string(ad);
-        std::cout << "Server Waiting for connections..." << ad << " " << this->_port << std::endl;
+    struct pollfd fd;
+    memset(&fd, 0, sizeof(fd));
 
-        struct pollfd fd;
-        memset(&fd, 0, sizeof(fd));
+    fd.fd = this->_sockfd;
+    fd.events = POLLIN;
+    this->_fds.push_back(fd);
 
-        fd.fd = this->_sockfd;
-        fd.events = POLLIN;
-        this->_fds.push_back(fd);
+    int sockfdBot = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfdBot == -1) {
+        std::cerr << "Failed to create socket" << std::endl;
+        freeaddrinfo(res);
+        return;
+    }
 
-        int sockfdBot = socket(AF_INET, SOCK_STREAM, 0);
-        if (sockfdBot == -1) {
-            std::cerr << "Failed to create socket" << std::endl;
-            freeaddrinfo(res);
-            return;
+
+    int portInt;
+    std::stringstream portstream(this->GetPort());
+    portstream >> portInt;
+    struct sockaddr_in serveraddr;
+    memset(&serveraddr, 0, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_port = htons(portInt);
+    if (inet_pton(AF_INET ,"127.0.0.1", &serveraddr.sin_addr) <= 0) {
+        std::cerr << "Failed to set address to bot sockaddr" << std::endl;
+        freeaddrinfo(res);
+        close(sockfdBot);
+        return ;
+    }
+
+    if (connect(sockfdBot, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1) {
+        std::cerr << "Failed to connect the BOUNTYBOT" << std::endl;
+        freeaddrinfo(res);
+        close(sockfdBot);
+        return ;
+    }
+    
+    if (fcntl(sockfdBot, F_SETFL, O_NONBLOCK) == -1) {
+        std::cerr << "fcntl failed" << std::endl;
+        close(sockfdBot);
+        freeaddrinfo(res);
+        return ;
+    }
+
+    Client bot;
+
+    bot.SetFd(sockfdBot);
+    bot.SetNickname("BOUNTYBOT");
+    bot.SetUsername("BOUNTYBOT");
+    bot.SetRealname("BOUNTYBOT");
+    bot.SetAddress("");
+    bot.SetAuthLevel(3);
+    this->_clients[sockfdBot] = bot;
+
+    struct pollfd botfd;
+    memset(&botfd, 0, sizeof(botfd));
+    botfd.fd = sockfdBot;
+    botfd.events = POLLIN;
+    this->_fds.push_back(botfd);
+
+    while(1) {
+        int client_fd;
+
+        int ret = poll(this->_fds.data(), this->_fds.size(), -1);
+        if (ret == -1) {
+            std::cerr << "error in poll" << std::endl;
         }
 
-        int portInt;
-        std::stringstream portstream(this->GetPort());
-        portstream >> portInt;
-        struct sockaddr_in serveraddr;
-        memset(&serveraddr, 0, sizeof(serveraddr));
-        serveraddr.sin_family = AF_INET;
-        serveraddr.sin_port = htons(portInt);
-        inet_pton(sockfdBot ,"127.0.0.1", &serveraddr.sin_addr);
+        for (size_t i = 0; i < this->_fds.size(); i++) {
+            if (this->_fds[i].revents & POLLIN) {
+                if (this->_fds[i].fd == this->_sockfd) {
+                    if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
+                        std::cerr << "Coudn't accept" << std::endl;
+                    }
+                    if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
+                        std::cerr << "fcntl failed" << std::endl;
+                    }
+                    struct pollfd fd;
+                    memset(&fd, 0, sizeof(fd));
 
-        if (connect(sockfdBot, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1) {
-            std::cerr << "Failed to connect the BOUNTYBOT" << std::endl;
-            freeaddrinfo(res);
-            close(sockfdBot);
-            return ;
-        }
+                    fd.fd = client_fd;
+                    fd.events = POLLIN;
+                    this->_fds.push_back(fd);
 
-        Client bot;
+                    Client cl(client_fd);
+                    this->_clients[client_fd] = cl;
+                    _clients[client_fd].SetAuthLevel(0);
+                } else {
+                    char buff[1024] = {0};
+                    int res = recv(this->_fds[i].fd, buff, 1023, 0);
+                    if (res < 0) {
+                        std::cerr << __FILE__ << " : " <<  __LINE__ << " coudn't read from recv" << std::endl;
+                    }
 
-        bot.SetFd(sockfdBot);
-        bot.SetNickname("BOUNTYBOT");
-        bot.SetUsername("BOUNTYBOT");
-        bot.SetRealname("BOUNTYBOT");
-        bot.SetAddress("");
-        bot.SetAuthLevel(3);
-        this->_clients[sockfdBot] = bot;
+                    this->_clients[this->_fds[i].fd].StoreBuffer(buff, res);
 
-        struct pollfd botfd;
-        memset(&botfd, 0, sizeof(botfd));
-        botfd.fd = sockfdBot;
-        botfd.events = POLLIN;
-        this->_fds.push_back(botfd);
-
-        while(1) {
-            int client_fd;
-
-            int ret = poll(this->_fds.data(), this->_fds.size(), 1000);
-            if (ret == -1) {
-                std::cerr << "error in poll" << std::endl;
-            }
-
-            for (size_t i = 0; i < this->_fds.size(); i++) {
-                if (this->_fds[i].revents & POLLIN) {
-                    if (this->_fds[i].fd == this->_sockfd) {
-
-                        if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
-                      		std::cout << "Coudn't accept" << std::endl;
-                       	}
-                        if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
-                            std::cerr << "fcntl failed" << std::endl;
-                        }
-                        struct pollfd fd;
-                        memset(&fd, 0, sizeof(fd));
-
-                        fd.fd = client_fd;
-                        fd.events = POLLIN;
-                        this->_fds.push_back(fd);
-
-                        Client cl(client_fd);
-                        this->_clients[client_fd] = cl;
-                        _clients[client_fd].SetAuthLevel(0);
+                    if (res == 0) {
+                        std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
+                        close(this->_fds[i].fd);
+                        bleachClient(this->_fds[i].fd);
+                        this->_clients.erase(this->_fds[i].fd);
+                        this->_fds.erase(this->_fds.begin() + i);
+                        continue;
+                    } else if (res <0) {
+                        std::cerr << "Coudn't receive message" << std::endl;
                     } else {
-                        char buff[1024] = {0};
-                        int res = recv(this->_fds[i].fd, buff, 1023, 0);
-                        if (res < 0) {
-                            std::cerr << __FILE__ << " : " <<  __LINE__ << " coudn't read from recv" << std::endl;
-                        }
-
-                        this->_clients[this->_fds[i].fd].StoreBuffer(buff, res);
-
-                        if (res == 0) {
-                            std::cout << "Client [" << this->_fds[i].fd <<  "] disconnected" << std::endl;
-                            close(this->_fds[i].fd);
-                            bleachClient(this->_fds[i].fd);
-                            this->_clients.erase(this->_fds[i].fd);
-                            this->_fds.erase(this->_fds.begin() + i);
-                            continue;
-                        } else if (res <0) {
-                            std::cerr << "Coudn't receive message" << std::endl;
-                        } else {
-                            if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
-                                std::string buffer(this->_clients[this->_fds[i].fd].GetBuffer());
-                                std::cerr << boldGreeen("from client [") << std::to_string(this->_fds[i].fd) << boldGreeen("]") + " : " << buffer;
-                                
-                                std::vector<std::string> args = split(buffer, ' ');
+                        if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
+                            std::string buffer(this->_clients[this->_fds[i].fd].GetBuffer());
+                                std::cout << boldGreeen("from client [") << this->_fds[i].fd << boldGreeen("]") + " : " << buffer;
+                            std::vector<std::string> strs = split_new_line(buffer);
+                            for (size_t j = 0; j < strs.size(); j++) {
+                                std::vector<std::string> args = split_space(strs[j]);
+                                if (args.size() == 0) {
+                                    continue;
+                                }
                                 if (args[0] == "PASS")
                                     passCmd(*this, _clients[this->_fds[i].fd], args);
                                 if (args[0] == "NICK" && _clients[this->_fds[i].fd].getAuthLevel() >= LEVEL(1))
@@ -227,8 +268,10 @@ void Server::RunServer( void ) {
                 }
             }
         }
-
-	freeaddrinfo(res);
+    }
+    if (res != NULL) {
+	    freeaddrinfo(res);
+    }
     close(sockfdBot);
 }
 void	Server::SendMessage( int client_fd, std::string message )  {
@@ -243,6 +286,9 @@ void	Server::SendMessage( int client_fd, std::string message )  {
 
 Server::~Server() {
 	(this->_sockfd == -1) ? : close(this->_sockfd);
+    for (size_t i = 0; i < this->_fds.size(); i++) {
+        close(this->_fds[i].fd);
+    }
 }
 
 //added by Soufiane:

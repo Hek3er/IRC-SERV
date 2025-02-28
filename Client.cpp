@@ -102,7 +102,7 @@ void Client::SendMessage( const std::string& msg ) const {
 }
 
 void Client::StoreBuffer( char *str, int size ) {
-    if (str == NULL || size == 0 || str[0] == '\n' || str[0] == '\r') {
+    if (str == NULL || size == 0 ) {
 		this->_messageCompleted = false;
 	    return ;
 	}
@@ -112,12 +112,7 @@ void Client::StoreBuffer( char *str, int size ) {
 			this->_buffer += str[i];
 		}
 	}
-
-    if (str[size - 1] != '\n') {
-        this->_messageCompleted = false;
-    } else {
-        this->_messageCompleted = true;
-    }
+	this->_messageCompleted = true;
 }
 
 bool Client::IsBufferReady( void ) const {
@@ -142,7 +137,7 @@ bool	passCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			);
 		if (args.size() == 1)
 			throw std::runtime_error(
-				ERR_PASSWDMISMATCH(irc_srv.getHostName(), clt.GetNickname())
+				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), args[0])
 			);
 		if ( ((irc_srv.GetPassword()).size() != args[1].size()) || \
 			(memcmp(irc_srv.GetPassword().c_str(), args[1].c_str(), irc_srv.GetPassword().length()) != 0))
@@ -213,12 +208,9 @@ bool checkconcatRealName(std::string &real_name) {
 bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::vector<std::string>& args)
 {
 	try {
-		bool alreadyseted = false;
-		if (args.size() != 1 && checkconcatRealName(args[1]))
-			args[1] = args[1].substr(1);
 		if (args.size() == 1 || args[1] == "")
 			throw std::runtime_error(
-				ERR_NEEDMOREPARAMS(irc_srv.getHostName() , clt.GetNickname(), args[0])
+				ERR_NONICKNAMEGIVEN(irc_srv.getHostName() , clt.GetNickname())
 			);
 		if (!findNickNameMatch(args[1], clients))
 			throw std::runtime_error(
@@ -226,29 +218,21 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 			);
 		if (!CheckNickname(args[1]))
 			throw std::runtime_error(
-				ERR_ERRONEUSNICKNAME(irc_srv.getHostName(), clt.GetNickname(), clt.GetNickname())
+				ERR_ERRONEUSNICKNAME(irc_srv.getHostName(), clt.GetNickname(), args[1])
 			);
-		if (clt.GetNickname() != "")
-			alreadyseted = true;
 		
 		if (clt.getAuthLevel() == LEVEL(3))
 		{
 			clt.SetNickname(args[1]);
 			irc_srv.brodcastNick(":" + clt.GetNickname() + "!" + clt.GetUsername() + "@localhost " + "NICK" + " " + args[1] + "\r\n");
-		}
-		// else
-		// 	std::cout << boldGreen("NICK: ") << args[1] << std::endl;
-		
-		if (clt.getAuthLevel() == LEVEL(1)) {
+		} else if (clt.getAuthLevel() == LEVEL(1)) {
 			clt.SetAuthLevel(2);
 			clt.SetNickname(args[1]);
 		} else if (clt.getAuthLevel() == LEVEL(2)) {
-			clt.SetAuthLevel(3);
 			clt.SetNickname(args[1]);
-			clt.SendMessage(WELCOME_REPLY(std::to_string(clt.GetFd()), clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
 		}
-		
 		return true;
+	
 	} catch (const std::exception& e) {
 		clt.SendMessage(e.what());
 		return false;
@@ -312,15 +296,16 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			throw std::runtime_error(
 				ERR_NEEDMOREPARAMS(irc_srv.getHostName(), clt.GetNickname(), "USER")
 			);
-		if (clt.getAuthLevel() == LEVEL(1))
-			clt.SetAuthLevel(2);
-		else if (clt.getAuthLevel() == LEVEL(2) && (clt.GetUsername()).empty() && (clt.getRealName()).empty()) {
+		
+		if (clt.getAuthLevel() == LEVEL(2)) {
 			clt.SetAuthLevel(3);
-			clt.SendMessage(WELCOME_REPLY(std::to_string(clt.GetFd()), clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
-		}
-		if (clt.getAuthLevel() != LEVEL(0)) {
+			std::stringstream ss(clt.GetFd());
+			std::string fd;
+			ss >> fd;
 			clt.SetUsername("~" + args[1]);
 			clt.SetRealname(args[4]);
+			clt.SendMessage(WELCOME_REPLY(fd, clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
+			return true;
 		}
 		return true;
 	} catch (const std::exception& e) {
@@ -331,29 +316,29 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 
 // bot
 
-void	bountyBot(Client &cleint, Client &bot, std::string &name) {
+void	bountyBot(Client &client, Client &bot, std::string &name) {
 	if (name == "LUFFY" || name == ":LUFFY")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "Luffy 👊🏻 is worth 3,000,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "Luffy 👊🏻 is worth 3,000,000,000 💰"));
 	else if (name == "NAMI" || name == ":NAMI")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "NAMI 👙 is worth 366,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "NAMI 👙 is worth 366,000,000 💰"));
 	else if (name == "USSOP" || name == ":USSOP")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "USSOP 🎯 is worth 500,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "USSOP 🎯 is worth 500,000,000 💰"));
 	else if (name == "SANJI" || name == ":SANJI")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "SANJI 🦵 is worth 1,032,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "SANJI 🦵 is worth 1,032,000,000 💰"));
 	else if (name == "ZORO" || name == ":ZORO")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "ZORO ⚔️ is worth 1,111,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "ZORO ⚔️ is worth 1,111,000,000 💰"));
 	else if (name == "ROBIN" || name == ":ROBIN")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "ROBIN 👢 is worth 930,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "ROBIN 👢 is worth 930,000,000 💰"));
 	else if (name == "CHOPPER" || name == ":CHOPPER")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "CHOPPER 🧸ྀི is worth 1,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "CHOPPER 🧸ྀི is worth 1,000 💰"));
 	else if (name == "FRANKY" || name == ":FRANKY")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "FRANKY 🤖 is worth 394,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "FRANKY 🤖 is worth 394,000,000 💰"));
 	else if (name == "BROOK" || name == ":BROOK")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "BROOK 💀 is worth 383,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "BROOK 💀 is worth 383,000,000 💰"));
 	else if (name == "JINBE" || name == ":JINBE")
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "JINBE 🌊 is worth 1,100,000,000 💰"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "JINBE 🌊 is worth 1,100,000,000 💰"));
 	else
-		cleint.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", cleint.GetNickname(), "this bot is only for Straw Hat 👒🏴‍☠️☠🍖"));
+		client.SendMessage(PRIVMSG_REPLY(bot.GetNickname(), bot.GetUsername(), "@localhost", client.GetNickname(), "this bot is only for Straw Hat 👒🏴‍☠️☠🍖"));
 }
 
 // PRIVMSG

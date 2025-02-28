@@ -126,7 +126,10 @@ std::pair<std::string, std::string> Channel::getModes() {
     if (user_limit) {
         modes += "l";
         if (!args.empty()) args += " ";
-        args += std::to_string(getLimit());
+        std::stringstream ss(getLimit());
+        std::string limit;
+        ss >> limit;
+        args += limit;
     }
     
     if (modes == "+")
@@ -288,6 +291,8 @@ std::vector<std::string> split(std::string str, char del) {
     
     return result;
 }
+
+
 
 std::string getTime(void)
 {
