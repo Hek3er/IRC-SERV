@@ -192,7 +192,7 @@ void Server::RunServer( void ) {
     while(1) {
         int client_fd;
 
-        int ret = poll(this->_fds.data(), this->_fds.size(), 1000);
+        int ret = poll(this->_fds.data(), this->_fds.size(), -1);
         if (ret == -1) {
             std::cerr << "error in poll" << std::endl;
         }
