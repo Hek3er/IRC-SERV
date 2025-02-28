@@ -78,6 +78,7 @@ void   Channel::addInvite(int fd) {
 }
 void Channel::removeMemeber(int fd) {
     clients_fd.erase(fd);
+    inviteds_fd.erase(fd);
     removeOp(fd);
 }
 void Channel::removeOp(int fd) {
