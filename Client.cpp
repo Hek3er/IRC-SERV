@@ -102,7 +102,7 @@ void Client::SendMessage( const std::string& msg ) const {
 }
 
 void Client::StoreBuffer( char *str, int size ) {
-    if (str == NULL || size == 0 || str[0] == '\n' || str[0] == '\r') {
+    if (str == NULL || size == 0 ) {
 		this->_messageCompleted = false;
 	    return ;
 	}
@@ -237,7 +237,10 @@ bool	nickCmd(Server& irc_srv, Client& clt, std::map<int, Client> &clients, std::
 		} else if (clt.getAuthLevel() == LEVEL(2)) {
 			clt.SetAuthLevel(3);
 			clt.SetNickname(args[1]);
-			clt.SendMessage(WELCOME_REPLY(std::to_string(clt.GetFd()), clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
+			std::stringstream ss(clt.GetFd());
+			std::string fd;
+			ss >> fd;
+			clt.SendMessage(WELCOME_REPLY(fd, clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
 		}
 		
 		return true;
@@ -308,7 +311,10 @@ bool	userCmd(Server& irc_srv, Client& clt, std::vector<std::string>& args)
 			clt.SetAuthLevel(2);
 		else if (clt.getAuthLevel() == LEVEL(2) && (clt.GetUsername()).empty() && (clt.getRealName()).empty()) {
 			clt.SetAuthLevel(3);
-			clt.SendMessage(WELCOME_REPLY(std::to_string(clt.GetFd()), clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
+			std::stringstream ss(clt.GetFd());
+			std::string fd;
+			ss >> fd;
+			clt.SendMessage(WELCOME_REPLY(fd, clt.GetNickname(), irc_srv.getHostName(), clt.GetUsername(), irc_srv.getHostName()));
 		}
 		if (clt.getAuthLevel() != LEVEL(0)) {
 			clt.SetUsername("~" + args[1]);
