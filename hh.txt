@@ -1,8 +1,0 @@
-
-PASS 123
-
-
-NICK reegl
-
-
-USER o 0 * e
