@@ -1,4 +1,4 @@
-	#include "Server.hpp"
+#include "Server.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
 #include <netdb.h>
@@ -6,9 +6,17 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 std::map<int, Client> Server::_clients;
 std::vector<struct pollfd> Server::_fds;
+bool stop = false;
+
+void    handle_sig(int sig) {
+    if (sig == SIGINT) {
+        stop = true;
+    }
+}
 
 Server::Server( std::string port, std::string password ) {
 	this->_port = port;
@@ -85,6 +93,8 @@ std::vector<std::string> split_space(std::string buffer) {
 
 void Server::RunServer( void ) {
 
+    signal(SIGINT, handle_sig);
+
 	struct addrinfo hints, *res;
 
 	memset(&hints, 0, sizeof(hints));
@@ -129,6 +139,7 @@ void Server::RunServer( void ) {
     gethostname(ad, sizeof(ad));
     hostName = std::string(ad);
     std::cout << "Server Waiting for connections..." << ad << " " << this->_port << std::endl;
+    std::cout << "Press ^C to quit" << std::endl;
 
     struct pollfd fd;
     memset(&fd, 0, sizeof(fd));
@@ -189,22 +200,25 @@ void Server::RunServer( void ) {
     botfd.events = POLLIN;
     this->_fds.push_back(botfd);
 
-    while(1) {
+    while(stop == false) {
         int client_fd;
 
         int ret = poll(this->_fds.data(), this->_fds.size(), -1);
-        if (ret == -1) {
+        if (ret == -1 && !stop) {
             std::cerr << "error in poll" << std::endl;
+            continue;
         }
 
         for (size_t i = 0; i < this->_fds.size(); i++) {
             if (this->_fds[i].revents & POLLIN) {
                 if (this->_fds[i].fd == this->_sockfd) {
-                    if ((client_fd = accept(this->_sockfd, 0, 0)) == -1) {
+                    if ((client_fd = accept(this->_sockfd, 0, 0)) == -1 && !stop) {
                         std::cerr << "Coudn't accept" << std::endl;
+                        continue;
                     }
-                    if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
+                    if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1 && !stop) {
                         std::cerr << "fcntl failed" << std::endl;
+                        continue;
                     }
                     struct pollfd fd;
                     memset(&fd, 0, sizeof(fd));
@@ -285,13 +299,16 @@ void	Server::SendMessage( int client_fd, std::string message )  {
 }
 
 Server::~Server() {
+
+    std::cout << "Server is closed" << std::endl;
 	(this->_sockfd == -1) ? : close(this->_sockfd);
     for (size_t i = 0; i < this->_fds.size(); i++) {
-        close(this->_fds[i].fd);
+        if (this->_fds[i].fd != -1) {
+            close(this->_fds[i].fd);
+        }
     }
 }
 
-//added by Soufiane:
 std::vector<Channel>& Server::getChannelList() {
     return channels;
 }
