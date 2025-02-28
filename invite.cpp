@@ -2,6 +2,12 @@
 #include "replies.hpp"
 
 bool    invite(Server& irc_srv, Client& clt, std::string nickname, std::string ch_name) {
+    Client* invited = irc_srv.getClientByNick(nickname);
+    if (!invited) {
+        clt.SendMessage(ERR_NOSUCHNICK(irc_srv.getHostName(), clt.GetNickname(), nickname));
+        return false; //client doesnt exist on the server!
+    }
+
     Channel* workingChannel = irc_srv.getChannel(ch_name);
     if (!workingChannel)
     {
@@ -21,11 +27,6 @@ bool    invite(Server& irc_srv, Client& clt, std::string nickname, std::string c
         return false; //is invite only mode and the sender is not operator ERR_CHANOPRIVSNEEDED
     }
     
-    Client* invited = irc_srv.getClientByNick(nickname);
-    if (!invited) {
-        clt.SendMessage(ERR_NOSUCHNICK(irc_srv.getHostName(), clt.GetNickname(), nickname));
-        return false; //client doesnt exist on the server!
-    }
     
     if (workingChannel->isMember(invited->GetFd())) {
         clt.SendMessage(ERR_USERONCHANNEL(irc_srv.getHostName(), clt.GetNickname(), invited->GetNickname(), ch_name));
@@ -38,7 +39,7 @@ bool    invite(Server& irc_srv, Client& clt, std::string nickname, std::string c
     //send confiramtion (RPL_INVITING) to the inviter
     clt.SendMessage(RPL_INVITING(irc_srv.getHostName(), clt.GetNickname(), nickname, ch_name));
     //send INVITE message, with the issuer as <source>, to the target user
-    invited->SendMessage(INVITE_REPLY(clt.GetUsername(),invited->GetUsername(), clt.GetAddress(), nickname, ch_name));
+    invited->SendMessage(INVITE_REPLY(clt.GetUsername(),invited->GetUsername(), irc_srv.getHostName(), nickname, ch_name));
     return true;
 }
 
