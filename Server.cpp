@@ -59,7 +59,7 @@ void	Server::removeChannle(std::string name) {
 
 std::vector<std::string> split_new_line(std::string buffer) {
     std::vector<std::string> result;
-    int pos;
+    size_t pos;
     while ((pos = buffer.find('\n')) != std::string::npos) {
         std::string tmp = buffer.substr(0, pos);
         result.push_back(tmp);
@@ -77,7 +77,7 @@ std::vector<std::string> split_new_line(std::string buffer) {
 
 std::vector<std::string> split_space(std::string buffer) {
     std::vector<std::string> result;
-    int pos;
+    size_t pos;
     while ((pos = buffer.find(' ')) != std::string::npos) {
         std::string tmp = buffer.substr(0, pos);
         result.push_back(tmp);

@@ -1,3 +1,9 @@
 PASS 123
 NICK reegl
 USER o 0 * e
+
+
+PASS pass 
+NICK salah
+NICK JOJO
+: 001 JOJO :Welcome to IRC SERVER !@e2r10p12.1337.ma
