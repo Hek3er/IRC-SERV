@@ -246,8 +246,6 @@ void Server::RunServer( void ) {
                         this->_clients.erase(this->_fds[i].fd);
                         this->_fds.erase(this->_fds.begin() + i);
                         continue;
-                    } else if (res <0) {
-                        std::cerr << "Coudn't receive message" << std::endl;
                     } else {
                         if (this->_clients[this->_fds[i].fd].IsBufferReady()) {
                             std::string buffer(this->_clients[this->_fds[i].fd].GetBuffer());

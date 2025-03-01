@@ -35,13 +35,14 @@ void    checkPassword(std::string& password) {
 int main( int ac, char **av ) {
     
     signal(SIGPIPE, SIG_IGN);
-    if (ac != 3) {
+    if (ac != 3 || av[1][0] == '\0' || av[2][0] == '\0') {
         std::cerr << "Usage : ./ircserv <port> <password>" << std::endl;
         return 1;
     }
 
     std::string port = std::string(av[1]);
     std::string password = std::string(av[2]);
+
     checkPassword(password);
 
     if (!CheckPort(port)) {

@@ -91,24 +91,6 @@ bool    Channel::isOp(int fd) {
     return (operators_fd.find(fd) != operators_fd.end());
 }
 
-// bool Channel::addMember(std::string nickname) {
-//     return (members.insert(nickname).second);
-// }
-// bool Channel::removeMemeber(std::string nickname) {
-//     return (members.erase(nickname) > 0); 
-// }
-// bool Channel::upgradeOp(std::string nickname) {
-//     if (members.find(nickname) != members.end())
-//         return (members.insert(nickname).second);
-//     return false;
-// }
-// bool Channel::downgradeOp(std::string nickname) {
-//     return (operators.erase(nickname) > 0);
-// }
-// bool Channel::isOp(std::string nickname) {
-//     return (operators.find(nickname) != operators.end());
-// }
-
 std::pair<std::string, std::string> Channel::getModes(int fd) {
     std::string modes = "+";
     std::string args = "";
@@ -131,11 +113,11 @@ std::pair<std::string, std::string> Channel::getModes(int fd) {
         modes += "l";
         if (!args.empty()) 
             args += " ";
-        args += std::to_string(getLimit());
-        // std::stringstream ss(getLimit());
-        // std::string limit;
-        // ss >> limit;
-        //args += limit;
+        // args += std::to_string(getLimit());
+        std::stringstream ss(getLimit());
+        std::string limit;
+        ss >> limit;
+        args += limit;
     }
     
     if (modes == "+")

@@ -43,9 +43,6 @@ class Channel {
         bool    isMember(int fd);
         bool    isOp(int fd);
 
-        //bool downgradeOp(Client& clt);
-        // bool isOp(Client& clt);
-
         void    setInvite(bool condition);
         void    setTopicRestriction(bool condition);
         void    setLimitCondition(bool condition);
