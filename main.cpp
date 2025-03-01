@@ -1,5 +1,22 @@
 #include "Server.hpp"
 
+void    PrintLogo( void ) {
+    const char* green = "\033[32m";
+    const char* reset = "\033[0m";
+    
+    std::cout << green;
+    std::cout << " ______  _______    ______          ______   ________  _______   __     __ " << std::endl;
+    std::cout << "|      \\|       \\  /      \\        /      \\ |        \\|       \\ |  \\   |  \\" << std::endl;
+    std::cout << " \\$$$$$$| $$$$$$$\\|  $$$$$$\\      |  $$$$$$\\| $$$$$$$$| $$$$$$$\\| $$   | $$" << std::endl;
+    std::cout << "  | $$  | $$__| $$| $$   \\$$______|  $__\\$$| $$__    | $$__| $$| $$   | $$" << std::endl;
+    std::cout << "  | $$  | $$    $$| $$     |      \\$$    \\ | $$  \\   | $$    $$ \\$$\\ /  $$" << std::endl;
+    std::cout << "  | $$  | $$$$$$$\\| $$   __ \\$$$$$$_\\$$$$$$\\| $$$$$   | $$$$$$$\\  \\$$\\  $$ " << std::endl;
+    std::cout << " _| $$_ | $$  | $$| $$__/  \\      |  \\__| $$| $$_____ | $$  | $$   \\$$ $$  " << std::endl;
+    std::cout << "|   $$ \\| $$  | $$ \\$$    $$       \\$$    $$| $$     \\| $$  | $$    \\$$$   " << std::endl;
+    std::cout << " \\$$$$$$ \\$$   \\$$  \\$$$$$$         \\$$$$$$  \\$$$$$$$$ \\$$   \\$$     \\$ " << std::endl << std::endl ;
+    std::cout << reset;
+}
+
 bool CheckPort( const std::string _port ) {
     int len = _port.length();
     if (len != 4) {
@@ -49,6 +66,8 @@ int main( int ac, char **av ) {
         std::cerr << "IRCSERV : [Port incorrect]" << std::endl;
         return 1;
     }
+
+    PrintLogo();
 
 	Server s(port, password);
 

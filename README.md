@@ -1,6 +1,7 @@
 # FT_IRC
 
 An Internet Relay Chat (IRC) server implementation in C++.
+![IRC-DEMO](https://fmi4cg1yoq.ufs.sh/f/cVtZuJ9vUYxcls0QFOu6cDg8hOYqa0Letmz4HuIGW1CS2jdr)
 
 ## Overview
 
@@ -79,14 +80,14 @@ Configure your IRC client with:
 
 | Command | Description |
 |---------|-------------|
-| PASS | Sets a connection password |
-| NICK | Sets or changes your nickname |
-| JOIN | Joins a channel |
+| PASS    | Sets a connection password |
+| NICK    | Sets or changes your nickname |
+| JOIN    | Joins a channel |
 | PRIVMSG | Sends a message to a user or channel |
-| MODE | Changes channel or user modes options supported : +-i/t/k/o/l |
-| TOPIC | Sets or retrieves a channel's topic |
-| KICK | Removes a user from a channel |
-| INVITE | Invites a user to a channel |
+| MODE    | Changes channel or user modes options supported : +-i/t/k/o/l |
+| TOPIC   | Sets or retrieves a channel's topic |
+| KICK    | Removes a user from a channel |
+| INVITE  | Invites a user to a channel |
 
 ## References
 
