@@ -91,4 +91,5 @@ Configure your IRC client with:
 ## References
 
 [Modern Irc](https://modern.ircdocs.horse)
+
 [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/)
